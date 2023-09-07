@@ -104,19 +104,24 @@ function GetClosestPolicePed(coords)
         -- get any type of human PED to start with
         local retval, closestPed = GetClosestPed(coords.x, coords.y, coords.z, 100.0, true, false, false, false, 26)
 
+        print('retval ' .. retval .. ' closestPed ' .. closestPed)
+
         if retval then
                 local policePed
                 local closestDist = #(coords - GetEntityCoords(closestPed))
 
                 if IsPedInAnyVehicle(entity, true) then
                         policePed = GetPedInVehicleSeat(entity, -1)
+                        print('closest ped is in a vehicle')
                 else
                         policePed = entity
+                        print('closest ped is on foot')
                 end
 
                 if DoesEntityExist(policePed) then
                         local entityPedType = GetPedType(policePed)
                         local distance = #(coords - GetEntityCoords(policePed))
+                        print('entityPedType ' .. entityPedType .. ' distance ' .. distance)
                         -- is PED a cop, swat, or army?
                         if entityPedType == 6 or entityPedType == 27 or entityPedType == 29 then
                                 -- can the PED see the player?
