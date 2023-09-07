@@ -1,5 +1,6 @@
 -- Global configurations
 local config = {
+    debug_enabled             = true,   -- Debug logging to local console
     pedBountySpawnMinDistance = 500.0,  -- spawn bount minimum of 500 meters away
     pedBountySpawnMaxDistance = 1500.0, -- spawn bount maximum of 1500 meters away
     openBountyMenuKey         = 29,     -- default key bind (B), only works inside the marker
@@ -151,7 +152,10 @@ end)
 RegisterNetEvent("playerDied")
 AddEventHandler("playerDied", function()
     if DoesEntityExist(globalTargetPed) then
-        DeleteEntity(globalTargetPed)
+        if config.debug_enabled then
+            print('Net Event: playerDied - bounty removed from memory')
+        end
+        SetEntityAsNoLongerNeeded(globalTargetPed)
     end
     if DoesBlipExist(globalBlip) then
         RemoveBlip(globalBlip)
@@ -168,7 +172,9 @@ AddEventHandler("bountyDied", function(bountyName)
 
         local bountyPed = globalTargetPed
         if DoesEntityExist(bountyPed) then
-            print('bounty has returned to the engines memory')
+            if config.debug_enabled then
+                print('Net Event: bountyDied - setting bounty PED as no longer needed')
+            end
             SetEntityAsNoLongerNeeded(bountyPed)
         end
 
@@ -177,6 +183,9 @@ AddEventHandler("bountyDied", function(bountyName)
         for _, bounty in pairs(bounties) do
             if bounty.name == bountyName then
                 rewardAmount = bounty.reward
+                if config.debug_enabled then
+                    print('Net Event: bountyDied - giving ' .. rewardAmount .. ' to player')
+                end
                 break -- exit once bounty is located
             end
         end
@@ -225,11 +234,12 @@ function FindValidSidewalkPosition(coords)
         sidewalkCoords.z = sidewalkCoords.z + 1.0
         return sidewalkCoords
     else
-        print('Warning: Sidewalk coords could not be found. Returning original coords')
+        print('FindValidSidewalkPosition() - Sidewalk coords could not be found. Returning original coords')
         return coords
     end
 end
 
+-- todo: doesnt currently work .. pending bank mod with bank deposit net event
 function GiveRewardToPlayer(amount)
     local playerPed = PlayerId()
     local currentMoney = GetPedMoney(playerPed)
@@ -243,7 +253,9 @@ function GetRandomSpawnCoords(playerCoords, minDistance, maxDistance)
     local maxAttempts = config.sidewalkCoordsAttempts -- Maximum number of attempts to find a valid spawn point
 
     while attempts <= maxAttempts do
-        print('Attempt (' .. attempts .. '/' .. maxAttempts .. ') to generate a random coords on solid ground')
+        if config.debug_enabled then
+            print('GetRandomSpawnCoords() - Attempt (' .. attempts .. '/' .. maxAttempts .. ') to generate a random coords on solid ground')
+        end
         -- Choose a random sector
         local sector = math.random(1, config.numberSectors)
         local angle = math.rad((360 / config.numberSectors) * (sector - 1)) -- Random angle within the selected sector
@@ -259,7 +271,9 @@ function GetRandomSpawnCoords(playerCoords, minDistance, maxDistance)
         local _, groundZ = GetGroundZFor_3dCoord(spawnCoords.x, spawnCoords.y, spawnCoords.z + 1.0, false)
 
         if groundZ ~= 0 and (spawnCoords.z - groundZ) < 2.0 then
-            print('Updated random coords')
+            if config.debug_enabled then
+                print('GetRandomSpawnCoords() - updated random coords with solid ground coords')
+            end
             return spawnCoords -- Return valid spawn coordinates
         elseif attempts == maxAttempts then
             return spawnCoords
@@ -293,10 +307,10 @@ function CreateBountyPed(bountyData, minDistance, maxDistance)
     end
 
     if vehicle_modelHash then
-        if roadNode and roadNode.x and roadNode.y and roadNode.z then
+        if roadNode.x and roadNode.y and roadNode.z then
             ped = CreatePed(4, modelHash, roadNode.x, roadNode.y, roadNode.z, 0.0, true, false)
         else
-            print('Warning: Invalid roadNode coordinates. Using random spawnCoords instead')
+            print('CreateBountyPed() - invalid roadNode coordinates! using random spawnCoords instead...')
             ped = CreatePed(4, modelHash, spawnCoords.x, spawnCoords.y, spawnCoords.z, 0.0, true, false)
         end
 
@@ -327,7 +341,10 @@ function CreateBountyPed(bountyData, minDistance, maxDistance)
         -- Make the PED drive the vehicle randomly
         TaskVehicleDriveWander(ped, veh, 80.0, config.pedDrivingStyle)
 
-        -- Return PED
+        if config.debug_enabled then
+            print('CreateBountyPed() - bounty PED spawned using vehicle')
+        end
+
         return ped
 
     else
@@ -354,6 +371,10 @@ function CreateBountyPed(bountyData, minDistance, maxDistance)
         -- Make the PED wander around on foot
         TaskWanderStandard(ped, 10.0, 10) -- set p1 to 10.0f and p2 to 10 if you want the ped to walk anywhere without a duration.
 
+        if config.debug_enabled then
+            print('CreateBountyPed() - bounty PED spawned on foot')
+        end
+
         return ped
 
     end
@@ -362,6 +383,11 @@ end
 -- Function to detect if target PED is dead or dying
 function IsPedDeadOrDying(ped)
     if DoesEntityExist(ped) then
+        if IsEntityDead(ped) or IsEntityDying(ped) then
+            if config.debug_enabled then
+                print('IsPedDeadOrDying() - detected PED dead or dying')
+            end
+        end
         return IsEntityDead(ped) or IsEntityDying(ped)
     end
     return false
@@ -411,7 +437,6 @@ Citizen.CreateThread(function()
         -- Check if the bounty is dead or dying, and if Player is not wanted, then clear level
         if DoesEntityExist(globalTargetPed) then
             if IsPedDeadOrDying(globalTargetPed, true) then
-                print('player dead or dying. clearing wanted level')
                 -- Check if the player is not already wanted and clear
                 if not IsPlayerWantedLevelGreater(player, 0) then
                     ClearPlayerWantedLevel(PlayerId())

@@ -61,6 +61,9 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 if hit then
                         return false -- There's an obstruction in the line of sight
                 else
+                        if debug_enabled then
+                                print('IsPlayerInPedFOV() - Police PED can see the player!')
+                        end
                         return true -- There's a clear line of sight
                 end
         else
@@ -74,7 +77,7 @@ function AttemptArrest(policePed)
         -- Check if the player is within a certain range before attempting arrest
         local distance = #(GetEntityCoords(policePed) - GetEntityCoords(playerPed))
         if distance < 2.0 then
-                print('something should happen..')
+                print('AttemptArrest() - something should happen..')
         end
 end
 
@@ -86,6 +89,11 @@ function CheckPlayerStopped()
 
         -- Check if the player has moved significantly in the last second
         isPlayerStopped = #(currentCoords - prevCoords) < 0.1
+        if debug_enabled then
+                if isPlayerStopped then
+                        print('CheckPlayerStopped() - Player detected as stopped during chase')
+                end
+        end
 end
 
 -- Function for returning the closest police ped
@@ -111,10 +119,6 @@ function GetClosestPolicePed(coords)
                                 if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
                                         closestPed = policePed
                                         closestDist = distance
-                                        local policeBlip = AddBlipForEntity(policePed)
-                                        SetBlipSprite(policeBlip, 8)
-                                        SetBlipColour(policeBlip, 1)
-                                        SetBlipAsShortRange(policeBlip, true)
                                 end
                         end
                 end
@@ -122,6 +126,8 @@ function GetClosestPolicePed(coords)
         if debug_enabled then
                 if not closestPed == -1 or not closestDist == 1 then
                         print('GetClosestPolicePed() - closestPed (' .. closestPed .. ') closestDist (' .. closestDist .. ')')
+                else
+                        print('GetClosestPolicePed() - No PED can be found nearby')
                 end
         end
         return closestPed, closestDist
@@ -150,7 +156,7 @@ function GetClosestPolicePeds(coords)
                                 if not isDead and isPlayerInFOV then
                                         table.insert(policePeds, {ped = policePed, dist = distance})
                                         if debug_enabled then
-                                                print('GetClosestPolicePeds: Police PED nearby (' .. policePed .. ') distance: (' .. distance .. ')')
+                                                print('GetClosestPolicePeds() - Police PED nearby (' .. policePed .. ') distance: (' .. distance .. ')')
                                         end
                                 end
                         end
@@ -167,7 +173,7 @@ function GetClosestPolicePeds(coords)
                 if i <= maxClosestPeds then
                         table.insert(closestPolicePeds, data.ped)
                         if debug_enabled then
-                                print('GetClosestPolicePeds: Returning (' .. data.ped .. ')')
+                                print('GetClosestPolicePeds() - Returning PEDs (' .. i .. '/' .. maxClosestPeds .. ') PED ' .. data.ped .. ')')
                         end
                 else
                         break
@@ -184,6 +190,19 @@ end
 -- todo: level 3 - police will now shoot on sight, pistols only
 -- todo: level 4 - swat is deployed along with helicopter?
 -- todo: level 5 - a rhino is deployed
+--
+-- todo: replace pairs(GetGamePool("CPed")) method with GetClosestPed... maybe this one? GetPedNearbyPeds
+-- Gets the closest ped in a radius.
+-- Ped Types:
+-- Any ped = -1
+-- Player = 1
+-- Male = 4
+-- Female = 5
+-- Cop = 6
+-- Human = 26
+-- SWAT = 27
+-- Animal = 28
+-- Army = 29
 Citizen.CreateThread(function()
         wanted_notified = false
         while true do
@@ -206,6 +225,9 @@ Citizen.CreateThread(function()
                         if GetPlayerWantedLevel(PlayerId()) == 1 or GetPlayerWantedLevel(PlayerId()) == 2 then
                                 if IsPlayerTargettingAnything(PlayerId()) then
                                         if IsPedShooting(PlayerPedId()) then
+                                                if debug_enabled then
+                                                        print('Wanted level thread - Player shot weapon while on wanted level 1 or 2')
+                                                end
                                                 SetPlayerWantedLevel(PlayerId(), 3, false)
                                                 SetPlayerWantedLevelNow(PlayerId(), false)
                                                 playerWantedCheck = false
@@ -441,7 +463,7 @@ Citizen.CreateThread(function()
                 -- dont bother checking if no police PED can see player
                 if not ent == -1 and not dist == -1 then
                         if debug_enabled then
-                                print('Police ped (' .. ent ..') distance (' .. dist ..')')
+                                print('Report System thread - Police ped (' .. ent ..') distance (' .. dist ..')')
                         end
                         -- traffic violations (is the player in a vehicle)
                         if IsPedInAnyVehicle(PlayerPedId(), false) then
@@ -454,8 +476,10 @@ Citizen.CreateThread(function()
                                 if dist < maxLosDist then
                                         -- if player is not already wanted
                                         if not IsPlayerWantedLevelGreater(PlayerId(), 0) then
-                                                print('dist: ' .. dist)
-                                                print('maxLosDist: ' .. maxLosDist)
+                                                if debug_enabled then
+                                                        print('Report System thread - Police PED distance: ' .. dist)
+                                                        print('Report System thread - Police PED max LOS:  ' .. maxLosDist)
+                                                end
                                                 local wheelieState = GetVehicleWheelieState(playerveh)
                                                 if vehicleClass == 16 then
                                                         -- vehicle is a plane, do nothing
@@ -545,7 +569,9 @@ Citizen.CreateThread(function()
 
                                                                         if distance <= nearbyDistance then
                                                                                 table.insert(nearbyVehicles, { vehicle = aiVehicle, heading = aiHeading, dist = distance })
-                                                                                print('vehicle found nearby (' .. aiVehicle .. ')')
+                                                                                if debug_enabled then
+                                                                                        print('Report System thread - PED vehicle found nearby (' .. aiVehicle .. ')')
+                                                                                end
                                                                         end
                                                                 end
                                                         end
@@ -556,14 +582,18 @@ Citizen.CreateThread(function()
                                                                 local distance = aiData.dist
 
                                                                 if aiVehicle and DoesEntityExist(aiVehicle) then
-                                                                        print('checking if vehicle is stopped at red light')
+                                                                        if debug_enabled then
+                                                                                print('Report System thread - checking if vehicle is stopped at red light')
+                                                                        end
                                                                         -- Check if the AI vehicle is stopped at a red light
                                                                         if IsVehicleStoppedAtRedLight(aiVehicle) then
                                                                                 -- Collect the player heading
                                                                                 local playerHeading = GetEntityHeading(playerveh)
                                                                                 -- Calculate the angle difference between the AI vehicle and the player's vehicle
                                                                                 local angleDiff = math.abs(playerHeading - aiHeading)
-                                                                                print('Red light calculation (' .. angleDiff .. ' <= ' .. angleThreshold .. ')')
+                                                                                if debug_enabled then
+                                                                                        print('Report System thread - Red light calculation (' .. angleDiff .. ' <= ' .. angleThreshold .. ')')
+                                                                                end
                                                                                 -- Ensure the angle difference is within the threshold
                                                                                 if angleDiff >= -angleThreshold and angleDiff <= angleThreshold then
                                                                                         -- The player ran a red light in front of the stopped AI vehicle

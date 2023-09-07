@@ -1,5 +1,8 @@
 -- Global config options
 local config = {
+    debug_enabled       = true,            -- Enable debug messages in console
+
+    -- Native ambient configs
     ambientEvents       = true,            -- Enable built-in ambient events for realism
     pedFrequency        = 1.0,             -- Built-in frequency of PED (max value 1.0)
     trafficFrequency    = 1.0,             -- Built-in frequency of traffic (max value 1.0)
@@ -29,6 +32,9 @@ function ReplacePedPhrase(ped, originalPhrase, replacementString)
 
     if dialogues ~= nil then
         for _, dialogue in pairs(dialogues) do
+            if config.debug_enabled then
+                print('ReplacePedPhrase() - ' .. dialogue.text)
+            end
             if dialogue.text == originalPhrase then
                 dialogue.text = replacementString
             end
@@ -102,6 +108,10 @@ Citizen.CreateThread(function()
                     SetEntityAsMissionEntity(vehicle, true, true)
                     SetEntityAsMissionEntity(ped, true, true)
 
+                    if config.debug_enabled then
+                        print('Main Thread - Police PED created (' .. ped .. ')')
+                    end
+
                     -- Make the police ped enter the vehicle
                     TaskWarpPedIntoVehicle(ped, vehicle, -1)
 
@@ -161,7 +171,8 @@ Citizen.CreateThread(function()
 
             if DoesEntityExist(ped) then
                 local pedHandle = NetworkGetNetworkIdFromEntity(ped)
-                local dialogues = Citizen.InvokeNative(0x049E937F18F4020C, pedHandle, false, true)
+                --local dialogues = Citizen.InvokeNative(0x049E937F18F4020C, pedHandle, false, true)
+                local dialogues = IsPedInCurrentConversation(pedHandle)
 
                 if dialogues ~= nil then
                     for _, dialogue in pairs(dialogues) do
