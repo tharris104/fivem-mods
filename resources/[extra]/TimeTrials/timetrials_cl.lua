@@ -290,7 +290,7 @@ Citizen.CreateThread(function()
         if race.isEnabled then
             race.blip = AddBlipForCoord(race.start.x, race.start.y, race.start.z)
             SetBlipSprite(race.blip, race.mapBlipId)
-            SetBlipDisplay(race.blip, 4)
+            SetBlipDisplay(race.blip, 3) -- Shows on main map only. (Selectable on map)
             SetBlipScale(race.blip, 1.0)
             SetBlipColour(race.blip, race.mapBlipColor)
             SetBlipAsShortRange(race.blip, true)
