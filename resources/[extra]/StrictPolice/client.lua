@@ -42,7 +42,7 @@ function ShowNotification(text)
         DrawNotification(false, false)
 end
 
--- Function for checking if a player is in the field of view of a ped
+-- Function for checking if a player is in the field of view of a ped (with raycasting)
 function IsPlayerInPedFOV(ped, player)
         local pedCoords = GetEntityCoords(ped, false)
         local playerCoords = GetEntityCoords(player, false)
@@ -51,12 +51,19 @@ function IsPlayerInPedFOV(ped, player)
         local directionToPlayer = playerCoords - pedCoords
         directionToPlayer = directionToPlayer / #(directionToPlayer)  -- Normalize the vector
 
-        local dotProduct = DotProduct3D(pedForwardVector, directionToPlayer)
+        local angle = math.deg(math.acos(DotProduct3D(pedForwardVector, directionToPlayer)))
 
-        if dotProduct > 0.5 then  -- Adjust this threshold as needed for your game
-                return true
+        if angle <= fovAngle then
+                -- Perform line-of-sight check against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
+                local rayHandle = StartShapeTestLosProbe(pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, -1, ped, 0)
+                local _, _, _, _, hit = GetShapeTestResult(rayHandle)
+
+                if hit then
+                        return false -- There's an obstruction in the line of sight
+                else
+                        return true -- There's a clear line of sight
+                end
         else
-                -- The player is not in the FOV
                 return false
         end
 end
@@ -67,7 +74,7 @@ function AttemptArrest(policePed)
         -- Check if the player is within a certain range before attempting arrest
         local distance = #(GetEntityCoords(policePed) - GetEntityCoords(playerPed))
         if distance < 2.0 then
-
+                print('something should happen..')
         end
 end
 
@@ -98,7 +105,6 @@ function GetClosestPolicePed(coords)
                         local entityPedType = GetPedType(policePed)
                         local distance = #(coords - GetEntityCoords(policePed))
 
-
                         if entityPedType == 6 or entityPedType == 27 then
                                 local isPlayerInFOV = IsPlayerInPedFOV(policePed, playerPed)
                                 local isDead = IsEntityDead(policePed)
@@ -115,8 +121,7 @@ function GetClosestPolicePed(coords)
         end
         if debug_enabled then
                 if not closestPed == -1 or not closestDist == 1 then
-                        print('GetClosestPolicePed() - closestPed: ' .. closestPed)
-                        print('GetClosestPolicePed() - closestDist: ' .. closestDist)
+                        print('GetClosestPolicePed() - closestPed (' .. closestPed .. ') closestDist (' .. closestDist .. ')')
                 end
         end
         return closestPed, closestDist
@@ -173,6 +178,12 @@ function GetClosestPolicePeds(coords)
 end
 
 -- Modify police behavior based on players wanted level
+-- todo: rework this entire function.. it should actually work first of all
+-- todo: level 1 - officer ped approch player, initiate chat with player, issue citation
+-- todo: level 2 - the officers will use either tazers or nightsticks to arrest you
+-- todo: level 3 - police will now shoot on sight, pistols only
+-- todo: level 4 - swat is deployed along with helicopter?
+-- todo: level 5 - a rhino is deployed
 Citizen.CreateThread(function()
         wanted_notified = false
         while true do
