@@ -130,6 +130,7 @@ AddEventHandler("createBountyBlip", function(selectedBounty)
     SetBlipSprite(blip, 84) -- skull blip
     SetBlipDisplay(blip, 2)
     SetBlipScale(blip, 0.7)
+    SetBlipColour(blip, 1) -- red skull blip
     SetBlipNameToPlayerName(blip, false) -- Disable the player name display
     BeginTextCommandSetBlipName("STRING")
     AddTextComponentString(selectedBounty.name) -- Set the blip name to the bounty target's name
