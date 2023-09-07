@@ -581,9 +581,7 @@ Citizen.CreateThread(function()
                                                 end
                                         end
                                 end
-
-                                -- non-moving violations
-                        else
+                        else -- non-moving violations (player not in vehicle)
                                 -- line of sight has no limit on distance, so we manually set threshold
                                 if dist < maxLosDist then
                                         -- cop sees you fighting
