@@ -17,11 +17,8 @@ local BO_WarningThreshold = 10
 local nearbyDistance = 200.0
 local angleThreshold = 90.0
 
--- Stop police from speaking
-local StopPoliceSpeaking = true -- todo: doesnt really work as expected..
-
 -- Maximum distance police PEDs can see player in their line of sight
-local MaxLosDist = 20 -- default 20
+local MaxLosDist = 25 -- default 25
 
 -- Switch used for modifying wanted level changes
 local PlayerWantedCheck = false
@@ -30,16 +27,16 @@ local PlayerWantedCheck = false
 local policePeds = {} -- Store the police peds you want to control
 local isPlayerStopped = false -- When chasing, always check if player is stopped
 
--- Helper function to calculate dot product of two vectors
-function DotProduct3D(a, b)
-        return a.x * b.x + a.y * b.y + a.z * b.z
-end
-
 -- Function for displaying notifications to player
 function ShowNotification(text)
         SetNotificationTextEntry("STRING")
         AddTextComponentString(text)
         DrawNotification(false, false)
+end
+
+-- Helper function to calculate dot product of two vectors
+function DotProduct3D(a, b)
+        return a.x * b.x + a.y * b.y + a.z * b.z
 end
 
 -- Function for checking if a player is in the field of view of a ped (with raycasting)
@@ -236,7 +233,6 @@ Citizen.CreateThread(function()
                                         local isdead = IsEntityDead(policePed)
                                         if policePed ~= playerPed and not isdead then
                                                 RemoveAllPedWeapons(policePed, true)
-                                                --StopPedSpeaking(policePed, StopPoliceSpeaking)
                                                 if not GetCurrentPedWeapon(policePed, GetHashKey("WEAPON_FLASHLIGHT")) then
                                                         GiveWeaponToPed(policePed, GetHashKey("WEAPON_FLASHLIGHT"), 100, false, true)
                                                 end
@@ -313,7 +309,6 @@ Citizen.CreateThread(function()
                                         local isdead = IsEntityDead(policePed)
                                         if policePed ~= playerPed and not isdead then
                                                 RemoveAllPedWeapons(policePed, true)
-                                                --StopPedSpeaking(policePed, StopPoliceSpeaking)
                                                 if not GetCurrentPedWeapon(entity, GetHashKey("WEAPON_FLASHLIGHT")) then
                                                         GiveWeaponToPed(entity, GetHashKey("WEAPON_FLASHLIGHT"), 100, false, false)
                                                 end
@@ -359,7 +354,6 @@ Citizen.CreateThread(function()
                                         if policePed ~= playerPed and not isdead then
                                                 ClearPedTasks(policePed)
                                                 RemoveAllPedWeapons(policePed, true)
-                                                --StopPedSpeaking(policePed, StopPoliceSpeaking)
                                                 if not GetCurrentPedWeapon(entity, GetHashKey("WEAPON_FLASHLIGHT")) then
                                                         GiveWeaponToPed(entity, GetHashKey("WEAPON_FLASHLIGHT"), 100, false, false)
                                                 end
@@ -400,7 +394,6 @@ Citizen.CreateThread(function()
                                 if GetPedType(entity) == 7 then
                                         local isdead = IsEntityDead(policePed)
                                         if policePed ~= playerPed and not isdead then
-                                                --StopPedSpeaking(policePed, StopPoliceSpeaking)
                                                 if not GetCurrentPedWeapon(entity, GetHashKey("WEAPON_FLASHLIGHT")) then
                                                         GiveWeaponToPed(entity, GetHashKey("WEAPON_FLASHLIGHT"), 100, false, false)
                                                 end
