@@ -359,6 +359,14 @@ function CreateBountyPed(bountyData, minDistance, maxDistance)
     end
 end
 
+-- Function to detect if target PED is dead or dying
+function IsPedDeadOrDying(ped)
+    if DoesEntityExist(ped) then
+        return IsEntityDead(ped) or IsEntityDying(ped)
+    end
+    return false
+end
+
 -- Main thread checking if player is in a bounty area
 Citizen.CreateThread(function()
     local isInsideMarker = false -- lock used so notifications are not spammed
@@ -396,6 +404,17 @@ Citizen.CreateThread(function()
                 local targetPed = globalTargetPed
                 if DoesEntityExist(targetPed) and IsEntityDead(targetPed) then
                     TriggerEvent("bountyDied", bountyName) -- Trigger the "bountyDied" event
+                end
+            end
+        end
+
+        -- Check if the bounty is dead or dying, and if Player is not wanted, then clear level
+        if DoesEntityExist(globalTargetPed) then
+            if IsPedDeadOrDying(globalTargetPed, true) then
+                print('player dead or dying. clearing wanted level')
+                -- Check if the player is not already wanted and clear
+                if not IsPlayerWantedLevelGreater(player, 0) then
+                    ClearPlayerWantedLevel(PlayerId())
                 end
             end
         end
