@@ -2,7 +2,10 @@
 local debug_enabled = true
 
 -- Global speed limit that will trigger a wanted level (mph)
-local GlobalSpeedLimit = 85 -- default 85
+local globalSpeedLimit = 85 -- default 85
+
+-- FOV angle at which PED can see player based on heading
+local policePedFOV = 90.0 -- default 90.0
 
 -- Amount allowed in seconds before these crimes are reported
 -- TOG: tires off ground, BO: burnouts, VW: vehicle wanted
@@ -18,10 +21,10 @@ local nearbyDistance = 200.0
 local angleThreshold = 90.0
 
 -- Maximum distance police PEDs can see player in their line of sight
-local MaxLosDist = 25 -- default 25
+local maxLosDist = 25 -- default 25
 
 -- Switch used for modifying wanted level changes
-local PlayerWantedCheck = false
+local playerWantedCheck = false -- todo: this method sucks..
 
 -- Variables used for police pursuit
 local policePeds = {} -- Store the police peds you want to control
@@ -40,7 +43,7 @@ function DotProduct3D(a, b)
 end
 
 -- Function for checking if a player is in the field of view of a ped (with raycasting)
-function IsPlayerInPedFOV(ped, player)
+function IsPlayerInPedFOV(ped, player, fovAngle)
         local pedCoords = GetEntityCoords(ped, false)
         local playerCoords = GetEntityCoords(player, false)
         local pedForwardVector = GetEntityForwardVector(ped)
@@ -103,7 +106,7 @@ function GetClosestPolicePed(coords)
                         local distance = #(coords - GetEntityCoords(policePed))
 
                         if entityPedType == 6 or entityPedType == 27 then
-                                local isPlayerInFOV = IsPlayerInPedFOV(policePed, playerPed)
+                                local isPlayerInFOV = IsPlayerInPedFOV(policePed, playerPed, policePedFOV)
                                 local isDead = IsEntityDead(policePed)
                                 if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
                                         closestPed = policePed
@@ -142,7 +145,7 @@ function GetClosestPolicePeds(coords)
 
                         if DoesEntityExist(policePed) then
                                 local isDead = IsEntityDead(policePed)
-                                local isPlayerInFOV = IsPlayerInPedFOV(policePed, playerPed)
+                                local isPlayerInFOV = IsPlayerInPedFOV(policePed, playerPed, policePedFOV)
                                 local distance = #(coords - GetEntityCoords(policePed))
                                 if not isDead and isPlayerInFOV then
                                         table.insert(policePeds, {ped = policePed, dist = distance})
@@ -205,7 +208,7 @@ Citizen.CreateThread(function()
                                         if IsPedShooting(PlayerPedId()) then
                                                 SetPlayerWantedLevel(PlayerId(), 3, false)
                                                 SetPlayerWantedLevelNow(PlayerId(), false)
-                                                PlayerWantedCheck = false
+                                                playerWantedCheck = false
                                         end
                                 end
                         end
@@ -216,7 +219,7 @@ Citizen.CreateThread(function()
                 ----------------------------------
 
                 -- level 1 initial code once you become wanted, police will attempt to arrest you
-                if PlayerWantedCheck == false and GetPlayerWantedLevel(PlayerId()) == 1 then
+                if playerWantedCheck == false and GetPlayerWantedLevel(PlayerId()) == 1 then
                         for index, entity in pairs(GetGamePool("CPed")) do
                                 -- assigning entity.. also consider peds in vehicles
                                 if IsEntityAPed(entity) then
@@ -284,7 +287,7 @@ Citizen.CreateThread(function()
                                         end
                                 end
                         end
-                        PlayerWantedCheck = true
+                        playerWantedCheck = true
                 end
 
                 ----------------------------------
@@ -292,7 +295,7 @@ Citizen.CreateThread(function()
                 ----------------------------------
 
                 -- level 2 police will now use tasers and attempt to arrest you
-                if PlayerWantedCheck == true and GetPlayerWantedLevel(PlayerId()) == 2 then
+                if playerWantedCheck == true and GetPlayerWantedLevel(PlayerId()) == 2 then
                         for index, entity in pairs(GetGamePool("CPed")) do
                                 -- assigning entity.. also consider peds in vehicles
                                 if IsEntityAPed(entity) then
@@ -328,7 +331,7 @@ Citizen.CreateThread(function()
                                         end
                                 end
                         end
-                        PlayerWantedCheck = false
+                        playerWantedCheck = false
                 end
 
                 ----------------------------------
@@ -336,7 +339,7 @@ Citizen.CreateThread(function()
                 ----------------------------------
 
                 -- level 3 police start using pistols now
-                if PlayerWantedCheck == false and GetPlayerWantedLevel(PlayerId()) == 3 then
+                if playerWantedCheck == false and GetPlayerWantedLevel(PlayerId()) == 3 then
                         for index, entity in pairs(GetGamePool("CPed")) do
                                 -- assigning entity.. also consider peds in vehicles
                                 if IsEntityAPed(entity) then
@@ -370,7 +373,7 @@ Citizen.CreateThread(function()
                                         end
                                 end
                         end
-                        PlayerWantedCheck = true
+                        playerWantedCheck = true
                 end
 
                 ----------------------------------
@@ -378,7 +381,7 @@ Citizen.CreateThread(function()
                 ----------------------------------
 
                 -- level 5 police start using rifles
-                if PlayerWantedCheck == true and GetPlayerWantedLevel(PlayerId()) >= 5 then
+                if playerWantedCheck == true and GetPlayerWantedLevel(PlayerId()) >= 5 then
                         for index, entity in pairs(GetGamePool("CPed")) do
                                 -- assigning entity.. also consider peds in vehicles
                                 if IsEntityAPed(entity) then
@@ -417,7 +420,7 @@ Citizen.CreateThread(function()
 
                 -- reset things back to normal
                 if GetPlayerWantedLevel(PlayerId()) == 0 then
-                        PlayerWantedCheck = false
+                        playerWantedCheck = false
                 end
         end
 end)
@@ -448,17 +451,17 @@ Citizen.CreateThread(function()
                                 local vehicleClass = GetVehicleClass(playerveh)
 
                                 -- line of sight has no limit on distance, so we manually set threshold
-                                if dist < MaxLosDist then
+                                if dist < maxLosDist then
                                         -- if player is not already wanted
                                         if not IsPlayerWantedLevelGreater(PlayerId(), 0) then
                                                 print('dist: ' .. dist)
-                                                print('maxLosDist: ' .. MaxLosDist)
+                                                print('maxLosDist: ' .. maxLosDist)
                                                 local wheelieState = GetVehicleWheelieState(playerveh)
                                                 if vehicleClass == 16 then
                                                         -- vehicle is a plane, do nothing
                                                 else
                                                         -- cop sees you speeding in car
-                                                        if speedmph > GlobalSpeedLimit then
+                                                        if speedmph > globalSpeedLimit then
                                                                 ShowNotification("Speeding Violation! (~r~" .. speedmph .. " mph~s~)")
                                                                 print(playerName .. " got a speeding violation! (" .. speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
                                                                 local policeBlip = AddBlipForEntity(ent)
@@ -582,7 +585,7 @@ Citizen.CreateThread(function()
                                 -- non-moving violations
                         else
                                 -- line of sight has no limit on distance, so we manually set threshold
-                                if dist < MaxLosDist then
+                                if dist < maxLosDist then
                                         -- cop sees you fighting
                                         if IsPedInMeleeCombat(ped) then
                                                 ShowNotification("Battery Violation! (~r~" .. speedmph .. " mph~s~)")
