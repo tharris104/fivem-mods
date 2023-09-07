@@ -209,8 +209,11 @@ Citizen.CreateThread(function()
 
                 Citizen.Wait(1000) -- every 1 second
 
-                -- todo: improve this method...
-                CheckPlayerStopped()
+                -- todo: improve this method... its only used when being chased??
+                -- todo: nothing is actually using isPlayerStopped variable
+                if IsPlayerWantedLevelGreater(PlayerId(), 0) then
+                        CheckPlayerStopped()
+                end
 
                 local policePed = -1
                 local playerCoords = GetEntityCoords(PlayerPedId())
