@@ -55,8 +55,6 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
         local angle = math.deg(math.acos(DotProduct3D(pedForwardVector, directionToPlayer)))
 
         if math.abs(angle) <= fovAngle then
-                local hash1 = GetHashKey("_CAST_RAY_POINT_TO_POINT")
-                local hash2 = GetHashKey("_GET_RAYCAST_RESULT")
                 if debug_enabled then
                         print('IsPlayerInPedFOV() - Player is within PED FOV angle (' .. angle .. ' <= ' .. fovAngle .. ')')
                         --print('IsPlayerInPedFOV() - Starting shape test with parameters (' .. pedCoords.x .. ',' .. pedCoords.y .. ',' .. pedCoords.z + 1.0 .. ',' .. playerCoords.x .. ',' .. playerCoords.y .. ',' .. playerCoords.z + 1.0 .. ',' .. ped .. ')')
@@ -76,7 +74,7 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 --        4
                 --)
                 --local rayHandle = Citizen.InvokeNative(hash1, pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, 0, ped, 4)
-                local rayHandle = StartShapeTestCapsule(pedCoords.x,pedCoords.y,pedCoords.z + 1.0,playerCoords.x,playerCoords.y,playerCoords.z + 1.0,1,-1,ped,4)
+                local rayHandle = StartShapeTestLosProbe(pedCoords.x,pedCoords.y,pedCoords.z + 1.0,playerCoords.x,playerCoords.y,playerCoords.z + 1.0,-1,ped,4)
 
                 local result = -1
                 local retval, hit, endCoords, surfaceNormal, entityHit -- local declarations here
@@ -90,7 +88,6 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                         if retval == 2 then
                                 result = 1
                         end
-                        --retval, hit, endCoords, surfaceNormal, entityHit = Citizen.InvokeNative(hash2, rayHandle)
                         timeoutCounter = timeoutCounter + 1
                 end
 
