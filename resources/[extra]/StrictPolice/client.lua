@@ -57,69 +57,54 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 if debug_enabled then
                         print('IsPlayerInPedFOV() - Player in PED angle (' .. angle .. ' <= ' .. fovAngle .. ')')
                 end
-                local hit, _, _, _, _ = LineOfSightTest(pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, -1)
+                -- Start shape test against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
+                local rayHandle = StartShapeTestLosProbe(
+                        pedCoords.x,
+                        pedCoords.y,
+                        pedCoords.z + 1.0,
+                        playerCoords.x,
+                        playerCoords.y,
+                        playerCoords.z + 1.0,
+                        -1,
+                        ped,
+                        4
+                )
+                local result = -1
+                local retval, hit, endCoords, surfaceNormal, entityHit -- Add local declarations here
 
-                if hit then
-                        -- There's an obstruction in the line of sight
+                local timeoutCounter = 0
+                local timeoutThreshold = 100 -- Adjust this value as needed
+
+                while result == -1 and timeoutCounter < timeoutThreshold do
+                        Citizen.Wait(0) -- Yield to the game's main loop
+                        retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
+                        timeoutCounter = timeoutCounter + 1
+                end
+
+                if timeoutCounter >= timeoutThreshold then
                         if debug_enabled then
-                                print('IsPlayerInPedFOV() - Police PED cannot see the player')
+                                print('IsPlayerInPedFOV() - Timeout reached; line of sight test incomplete.')
                         end
-                        return false
-                else
-                        -- There's a clear line of sight
+                        return false -- Handle the timeout condition
+                end
+
+                if retval == 0 then
+                        -- The line of sight test did not hit anything
                         if debug_enabled then
                                 print('IsPlayerInPedFOV() - Police PED can see the player!')
                         end
-                        return true
+                        return true -- There's a clear line of sight
+                elseif retval == 2 then
+                        -- The line of sight test completed successfully
+                        if debug_enabled then
+                                print('IsPlayerInPedFOV() - Police PED can not see player')
+                        end
+                        return false -- There's an obstruction in the line of sight
+                else
+                        if debug_enabled then
+                                print('IsPlayerInPedFOV() - something else is happening.......')
+                        end
                 end
-                -- Start shape test against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
-                --local rayHandle = StartShapeTestLosProbe(
-                --        pedCoords.x,
-                --        pedCoords.y,
-                --        pedCoords.z + 1.0,
-                --        playerCoords.x,
-                --        playerCoords.y,
-                --        playerCoords.z + 1.0,
-                --        4294967295,
-                --        ped,
-                --        4
-                --)
-                --local result = -1
-                --local retval, hit, endCoords, surfaceNormal, entityHit -- Add local declarations here
-                --
-                --local timeoutCounter = 0
-                --local timeoutThreshold = 100 -- Adjust this value as needed
-                --
-                --while result == -1 and timeoutCounter < timeoutThreshold do
-                --        Citizen.Wait(0) -- Yield to the game's main loop
-                --        retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
-                --        timeoutCounter = timeoutCounter + 1
-                --end
-                --
-                --if timeoutCounter >= timeoutThreshold then
-                --        if debug_enabled then
-                --                print('IsPlayerInPedFOV() - Timeout reached; line of sight test incomplete.')
-                --        end
-                --        return false -- Handle the timeout condition
-                --end
-                --
-                --if retval == 0 then
-                --        -- The line of sight test did not hit anything
-                --        if debug_enabled then
-                --                print('IsPlayerInPedFOV() - Police PED can see the player!')
-                --        end
-                --        return true -- There's a clear line of sight
-                --elseif retval == 2 then
-                --        -- The line of sight test completed successfully
-                --        if debug_enabled then
-                --                print('IsPlayerInPedFOV() - Police PED can not see player')
-                --        end
-                --        return false -- There's an obstruction in the line of sight
-                --else
-                --        if debug_enabled then
-                --                print('IsPlayerInPedFOV() - something else is happening.......')
-                --        end
-                --end
         else
                 return false
         end
