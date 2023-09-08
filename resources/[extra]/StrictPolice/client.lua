@@ -132,17 +132,15 @@ function GetClosestPolicePed(coords)
                                 closestPed = entity
                                 closestDist = distance
                                 if debug_enabled then
-                                        print('GetClosestPolicePed() - Police PED (' .. closestPed .. ') can see the player!')
+                                        print('GetClosestPolicePed() - Police PED (' .. closestPed .. ') can see the player from distance (' .. distance .. ')')
                                 end
                                 return closestPed, closestDist
                         end
                 end
         end
 
-        if closestPed then
-
-        else
-                return nil, -1 -- Return nil and -1 if no suitable ped is found
+        if not closestPed then
+                return nil, -1 -- Return nil and -1 if no suitable ped was found
         end
 end
 
