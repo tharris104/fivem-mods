@@ -47,8 +47,6 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
         local pedCoords = GetEntityCoords(ped, false)
         local playerCoords = GetEntityCoords(player, false)
         local pedForwardVector = GetEntityForwardVector(ped)
-
-
         local directionToPlayer = playerCoords - pedCoords
         directionToPlayer = directionToPlayer / #(directionToPlayer) -- Normalize the vector
 
@@ -56,18 +54,16 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
 
         if math.abs(angle) <= fovAngle then
                 local rayHandle = StartShapeTestLosProbe(pedCoords.x,pedCoords.y,pedCoords.z + 1.0,playerCoords.x,playerCoords.y,playerCoords.z + 1.0,-1,ped,4)
-
                 local result = -1
-                local retval, hit, endCoords, surfaceNormal, entityHit -- local declarations here
-
+                local retval, hit, endCoords, surfaceNormal, entityHit
                 local timeoutCounter = 0
-                local timeoutThreshold = 100 -- Adjust this value as needed
+                local timeoutThreshold = 100
 
                 while result == -1 and timeoutCounter < timeoutThreshold do
-                        Citizen.Wait(0) -- Yield to the game's main loop
+                        Citizen.Wait(0) -- yield to the game's main loop
                         retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
                         if retval == 2 then
-                                result = 1
+                                result = 1 -- 2 = successfully extracted test result
                         end
                         timeoutCounter = timeoutCounter + 1
                 end
@@ -76,19 +72,11 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                         if debug_enabled then
                                 print('IsPlayerInPedFOV() - Timeout reached; line of sight test incomplete.')
                         end
-                        return false -- Handle the timeout condition
+                        return false
                 end
 
-                if retval == 0 then
-                        if debug_enabled then
-                                print('IsPlayerInPedFOV() - The line of sight test did not complete successfully!')
-                        end
-                        return false
-                elseif retval == 2 then
+                if retval == 2 then
                         if endCoords ~= vector3(0, 0, 0) and surfaceNormal ~= vector3(0, 0, 0) then
-                                if debug_enabled then
-                                        print('IsPlayerInPedFOV() - Police PED (' .. ped .. ') cannot see player')
-                                end
                                 return false
                         else
                                 if debug_enabled then
@@ -96,13 +84,9 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                                 end
                                 return true
                         end
-                else
-                        if debug_enabled then
-                                print('IsPlayerInPedFOV() - something bad is happening.....')
-                        end
                 end
         else
-                return false
+                return false -- player is out of the peds angle although within distance (behind the ped)
         end
 end
 
