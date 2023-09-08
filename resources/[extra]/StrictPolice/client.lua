@@ -174,14 +174,14 @@ function GetClosestPolicePed(coords)
 
                         if debug_enabled then
                                 if isPlayerInFOV then
-                                        print('GetClosestPolicePed() - isPlayerInFOV is (true).. pedType is (' .. pedType .. ')')
+                                        print('GetClosestPolicePed() - isPlayerInFOV is (TRUE).. pedType is (' .. pedType .. ')')
                                 else
-                                        print('GetClosestPolicePed() - isPlayerInFOV is (false).. pedType is (' .. pedType .. ')')
+                                        print('GetClosestPolicePed() - isPlayerInFOV is (FALSE).. pedType is (' .. pedType .. ')')
                                 end
                         end
 
                         if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
-                                print('AHHHHHHHHHHHHHHHHHHHHH')
+                                ShowNotification("~r~A POLICE CAN SEE YOU!!!!!!!")
                                 closestPed = entity
                                 closestDist = distance
                         end
