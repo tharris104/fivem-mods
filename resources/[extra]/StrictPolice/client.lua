@@ -75,7 +75,7 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 --        ped,
                 --        4
                 --)
-                local rayHandle = Citizen.InvokeNative(hash1, pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, -1, ped, 4)
+                local rayHandle = Citizen.InvokeNative(hash1, pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, 0, ped, 4)
 
                 local result = -1
                 local retval, hit, endCoords, surfaceNormal, entityHit -- Add local declarations here
