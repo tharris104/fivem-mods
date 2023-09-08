@@ -49,28 +49,25 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
         local pedForwardVector = GetEntityForwardVector(ped)
 
         local directionToPlayer = playerCoords - pedCoords
-        directionToPlayer = directionToPlayer / #(directionToPlayer)  -- Normalize the vector
+        directionToPlayer = Normalize(directionToPlayer) -- Normalize the vector
 
         local angle = math.deg(math.acos(DotProduct3D(pedForwardVector, directionToPlayer)))
 
         if debug_enabled then
                 print('IsPlayerInPedFOV() - checking... angle=' .. angle .. ' fovAngle=' .. fovAngle)
         end
-        if angle <= fovAngle then
+        if math.abs(angle) <= fovAngle then
                 -- Perform line-of-sight check against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
                 local rayHandle = StartShapeTestLosProbe(pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, -1, ped, 0)
-                local returnval, hit1, _, _, hit2 = GetShapeTestResult(rayHandle)
+                local _, _, _, _, hit = GetShapeTestResult(rayHandle)
                 if debug_enabled then
-                        print('IsPlayerInPedFOV() - rayHandle=' .. rayHandle .. ' returnval=' .. returnval)
-                        if hit1 then
-                                print('hit1 is true')
-                        end
-                        if hit2 then
-                                print('hit2 is true')
+                        print('IsPlayerInPedFOV() - rayHandle=' .. rayHandle)
+                        if hit then
+                                print('hit is true')
                         end
                 end
 
-                if hit2 then
+                if hit then
                         return false -- There's an obstruction in the line of sight
                 else
                         if debug_enabled then
