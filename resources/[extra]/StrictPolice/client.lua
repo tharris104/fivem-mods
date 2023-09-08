@@ -70,15 +70,26 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                         4
                 )
                 local result = -1
-                local retval, hit, endCoords, surfaceNormal, entityHit -- Add local declarations here
+                local retval, hit, endCoords, surfaceNormal, materialHash, entityHit -- Add local declarations here
 
                 local timeoutCounter = 0
                 local timeoutThreshold = 100 -- Adjust this value as needed
 
                 while result == -1 and timeoutCounter < timeoutThreshold do
                         Citizen.Wait(0) -- Yield to the game's main loop
-                        retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
+                        --retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
+                        retval, hit, endCoords, surfaceNormal, materialHash, entityHit = GetShapeTestResultIncludingMaterial(rayHandle)
                         timeoutCounter = timeoutCounter + 1
+                end
+
+                if debug_enabled then
+                        print('IsPlayerInPedFOV() - shape test return value (' .. retval .. ')')
+                        if hit then
+                                print('IsPlayerInPedFOV() - hit = true')
+                        end
+                        if entityHit then
+                                print('IsPlayerInPedFOV() - entityHit = true')
+                        end
                 end
 
                 if timeoutCounter >= timeoutThreshold then
