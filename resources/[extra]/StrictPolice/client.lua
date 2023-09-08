@@ -91,7 +91,9 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 end
 
                 if debug_enabled then
-                        print('IsPlayerInPedFOV() - shape test return value (' .. retval .. ')')
+                        if retval then
+                                print('IsPlayerInPedFOV() - retval = true')
+                        end
                         if hit then
                                 print('IsPlayerInPedFOV() - hit = true')
                         end
