@@ -58,13 +58,16 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                         print('IsPlayerInPedFOV() - Player in PED angle (' .. angle .. ' <= ' .. fovAngle .. ')')
                 end
 
-                -- start shape test against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
+                -- Start shape test against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
                 local rayHandle = StartShapeTestLosProbe(pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, -1, 0, 4)
                 local result = -1
+                local retval, hit, endCoords, surfaceNormal, entityHit -- Add local declarations here
+
                 while result == -1 do
                         Citizen.Wait(0) -- Yield to the game's main loop
                         retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
                 end
+
                 if retval == 0 then
                         -- The line of sight test did not hit anything
                         if debug_enabled then
