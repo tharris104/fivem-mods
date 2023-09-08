@@ -57,23 +57,7 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
         if math.abs(angle) <= fovAngle then
                 if debug_enabled then
                         print('IsPlayerInPedFOV() - Player is within PED FOV angle (' .. angle .. ' <= ' .. fovAngle .. ')')
-                        --print('IsPlayerInPedFOV() - Starting shape test with parameters (' .. pedCoords.x .. ',' .. pedCoords.y .. ',' .. pedCoords.z + 1.0 .. ',' .. playerCoords.x .. ',' .. playerCoords.y .. ',' .. playerCoords.z + 1.0 .. ',' .. ped .. ')')
-                        --print('_CAST_RAY_POINT_TO_POINT hash.. ' .. hash1)
-                        --print('_GET_RAYCAST_RESULT hash.. ' .. hash2)
                 end
-                -- Start shape test against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
-                --local rayHandle = StartExpensiveSynchronousShapeTestLosProbe(
-                --        pedCoords.x,
-                --        pedCoords.y,
-                --        pedCoords.z + 1.0,
-                --        playerCoords.x,
-                --        playerCoords.y,
-                --        playerCoords.z + 1.0,
-                --        -1,
-                --        ped,
-                --        4
-                --)
-                --local rayHandle = Citizen.InvokeNative(hash1, pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, 0, ped, 4)
                 local rayHandle = StartShapeTestLosProbe(pedCoords.x,pedCoords.y,pedCoords.z + 1.0,playerCoords.x,playerCoords.y,playerCoords.z + 1.0,-1,ped,4)
 
                 local result = -1
@@ -91,18 +75,6 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                         timeoutCounter = timeoutCounter + 1
                 end
 
-                if debug_enabled then
-                        print('IsPlayerInPedFOV() ----------------------- retval = ' .. retval)
-                        print('IsPlayerInPedFOV() ----------------------- endCoords = ' .. endCoords)
-                        print('IsPlayerInPedFOV() ----------------------- surfaceNormal = ' .. surfaceNormal)
-                        if hit then
-                                print('IsPlayerInPedFOV() ----------------------- hit = true')
-                        end
-                        if entityHit then
-                                print('IsPlayerInPedFOV() ----------------------- entityHit = true')
-                        end
-                end
-
                 if timeoutCounter >= timeoutThreshold then
                         if debug_enabled then
                                 print('IsPlayerInPedFOV() - Timeout reached; line of sight test incomplete.')
@@ -111,20 +83,25 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 end
 
                 if retval == 0 then
-                        -- The line of sight test did not hit anything
                         if debug_enabled then
-                                print('IsPlayerInPedFOV() - Police PED can see the player!')
+                                print('IsPlayerInPedFOV() - The line of sight test did not complete successfully!')
                         end
-                        return true -- There's a clear line of sight
+                        return false
                 elseif retval == 2 then
-                        -- The line of sight test completed successfully
-                        if debug_enabled then
-                                print('IsPlayerInPedFOV() - Police PED can not see player')
+                        if endCoords ~= vector3(0, 0, 0) and surfaceNormal ~= vector3(0, 0, 0) then
+                                if debug_enabled then
+                                        print('IsPlayerInPedFOV() - Police PED can see the player!')
+                                end
+                                return true
+                        else
+                                if debug_enabled then
+                                        print('IsPlayerInPedFOV() - Police PED cannot see player')
+                                end
+                                return false
                         end
-                        return false -- There's an obstruction in the line of sight
                 else
                         if debug_enabled then
-                                print('IsPlayerInPedFOV() - something else is happening.......')
+                                print('IsPlayerInPedFOV() - something bad is happening.....')
                         end
                 end
         else
