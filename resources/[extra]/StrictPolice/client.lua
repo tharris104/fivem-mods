@@ -87,14 +87,14 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 elseif retval == 2 then
                         if endCoords ~= vector3(0, 0, 0) and surfaceNormal ~= vector3(0, 0, 0) then
                                 if debug_enabled then
-                                        print('IsPlayerInPedFOV() - Police PED (' .. ped .. ') can see the player!')
-                                end
-                                return true
-                        else
-                                if debug_enabled then
                                         print('IsPlayerInPedFOV() - Police PED (' .. ped .. ') cannot see player')
                                 end
                                 return false
+                        else
+                                if debug_enabled then
+                                        print('IsPlayerInPedFOV() - Police PED (' .. ped .. ') can see the player!')
+                                end
+                                return true
                         end
                 else
                         if debug_enabled then
