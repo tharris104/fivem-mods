@@ -148,7 +148,6 @@ function GetClosestPolicePed(coords)
                         local isDead = IsEntityDead(entity)
 
                         if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
-                                ShowNotification("~r~A POLICE CAN SEE YOU!!!!!!!")
                                 closestPed = entity
                                 closestDist = distance
                         end
