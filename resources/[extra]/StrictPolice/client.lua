@@ -63,9 +63,20 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 local result = -1
                 local retval, hit, endCoords, surfaceNormal, entityHit -- Add local declarations here
 
-                while result == -1 do
+                local timeoutCounter = 0
+                local timeoutThreshold = 100 -- Adjust this value as needed
+
+                while result == -1 and timeoutCounter < timeoutThreshold do
                         Citizen.Wait(0) -- Yield to the game's main loop
                         retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
+                        timeoutCounter = timeoutCounter + 1
+                end
+
+                if timeoutCounter >= timeoutThreshold then
+                        if debug_enabled then
+                                print('IsPlayerInPedFOV() - Timeout reached; line of sight test incomplete.')
+                        end
+                        return false -- Handle the timeout condition
                 end
 
                 if retval == 0 then
