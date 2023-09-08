@@ -6,8 +6,8 @@ local config = {
   TOG_WarningThreshold = 20, -- Threshold for tires off the ground
   BO_WarningCounter = 0,     -- Counter for burnouts
   BO_WarningThreshold = 10,  -- Threshold for burnouts
-  VW_WarningCounter = 0,     -- Counter for wanted vehicle
-  VW_WarningThreshold = 10,  -- Threshold for wanted vehicle
+  --VW_WarningCounter = 0,     -- Counter for wanted vehicle
+  --VW_WarningThreshold = 10,  -- Threshold for wanted vehicle
   nearbyDistance = 200.0,    -- While driving, monitor vehicles nearby that are stopped at red light
   angleThreshold = 90.0,     -- If player passes this vehicle within set angle, police nearby can report traffic violation
   maxLosDist = 60,           -- Global maximum line of sight for Police PED's
@@ -19,7 +19,6 @@ local function ShowNotification(text)
   AddTextComponentString(text)
   DrawNotification(false, false)
 end
-
 
 -- Function to calculate dot product of two vectors
 local function DotProduct3D(a, b)
@@ -54,8 +53,8 @@ local function IsPlayerInPedFOV(ped, player, fovAngle)
     end
 
     if timeoutCounter >= timeoutThreshold then
-      if debug_enabled then
-        print('IsPlayerInPedFOV() - Timeout reached; line of sight test incomplete.')
+      if config.debug_enabled then
+        print('IsPlayerInPedFOV() - Line of sight test timed out.. retval=' .. retval .. ' hit=' .. tostring(hit) .. ' entityHit=' .. tostring(entityHit))
       end
       return false
     end
@@ -85,13 +84,13 @@ local function GetClosestPolicePed(coords)
 
     if pedType == 6 or pedType == 27 or pedType == 29 then -- Cop, SWAT, Army
 
-      local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, policePedFOV)
+      local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, config.policePedFOV)
       local isDead = IsEntityDead(entity)
 
       if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
         closestPed = entity
         closestDist = distance
-        if debug_enabled then
+        if config.debug_enabled then
           print('GetClosestPolicePed() - Police PED (' .. closestPed .. ') can see the player from distance (' .. distance .. ')')
         end
         return closestPed, closestDist
@@ -109,40 +108,40 @@ end
 Citizen.CreateThread(function()
   while true do
     Wait(1000) -- every 1 second
-
-    -- collect player info
     local playerPed = PlayerPedId()
     local playerName = GetPlayerName(PlayerId())
-
-    -- get closest PED that is police and in the line of sight of player
     local ent, dist = GetClosestPolicePed()
 
-    -- dont bother checking if no police PED can see player
-    if not ent == -1 and not dist == -1 then
-      if debug_enabled then
-        print('Report System thread - Police ped (' .. ent ..') distance (' .. dist ..')')
+    -- dont continue if Police PED's cannot see the player
+    if ent ~= -1 and dist ~= -1 then
+      if config.debug_enabled then
+        print('Report System thread - Police ped (' .. ent ..') distance (' .. dist ..') can see the player')
       end
-      -- traffic violations (is the player in a vehicle)
-      if IsPedInAnyVehicle(PlayerPedId(), false) then
 
+      -- traffic violations (is the player in a vehicle or getting in?)
+      if IsPedInAnyVehicle(PlayerPedId(), true) then
+        -- collect more detailed info now
         local playerveh = GetVehiclePedIsUsing(playerPed)
-        local speedmph = (GetEntitySpeed(playerveh) * 2.236936)
+        local speedmph = (GetEntitySpeed(playerveh) * 2.236936) -- https://docs.fivem.net/natives/?_0xD5037BA82E12416F
         local vehicleClass = GetVehicleClass(playerveh)
 
-        -- line of sight has no limit on distance, so we manually set threshold
-        if dist < maxLosDist then
+        -- line of sight has no limit so we manually set threshold
+        if dist < config.maxLosDist then
           -- if player is not already wanted
           if not IsPlayerWantedLevelGreater(PlayerId(), 0) then
-            if debug_enabled then
+            if config.debug_enabled then
               print('Report System thread - Police PED distance: ' .. dist)
-              print('Report System thread - Police PED max LOS:  ' .. maxLosDist)
+              print('Report System thread - Police PED max LOS:  ' .. config.maxLosDist)
             end
-            local wheelieState = GetVehicleWheelieState(playerveh)
-            if vehicleClass == 16 then
-              -- vehicle is a plane, do nothing
+            if vehicleClass == 14 or vehicleClass == 15 or vehicleClass == 16 or vehicleClass == 21 then
+              -- vehicle is either a boat, helicopter, plane, or train... do nothing
+              if config.debug_enabled then
+                print('Report System thread - Police can see the player in either a boat, helicopter, plane, or train')
+              end
             else
+
               -- cop sees you speeding in car
-              if speedmph > globalSpeedLimit then
+              if speedmph > config.globalSpeedLimit then
                 ShowNotification("Speeding Violation! (~r~" .. speedmph .. " mph~s~)")
                 print(playerName .. " got a speeding violation! (" .. speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
                 local policeBlip = AddBlipForEntity(ent)
@@ -150,8 +149,9 @@ Citizen.CreateThread(function()
                 SetBlipColour(policeBlip, 1)
                 SetBlipAsShortRange(policeBlip, true)
                 ReportCrime(PlayerId(), 4, GetWantedLevelThreshold(1)) -- 4: Speeding vehicle (a "5-10")
-                -- cop sees you doing a wheelie
-              elseif wheelieState == 129 or wheelieState == 65 then
+
+              -- cop sees you doing a wheelie
+              elseif GetVehicleWheelieState(playerveh) == 129 then
                 ShowNotification("~r~Police~s~ witnessed you doing a wheelie!")
                 print(playerName .. "Police witnessed you doing a wheelie! cop (" .. ent .. ") dist (" .. dist .. ")")
                 local policeBlip = AddBlipForEntity(ent)
@@ -159,7 +159,8 @@ Citizen.CreateThread(function()
                 SetBlipColour(policeBlip, 1)
                 SetBlipAsShortRange(policeBlip, true)
                 ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
-                -- cop sees you driving known stolen vehicle
+
+              -- cop sees you driving known stolen vehicle
               elseif IsVehicleStolen(playerveh) then
                 ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
                 print(playerName .. "Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
@@ -168,7 +169,8 @@ Citizen.CreateThread(function()
                 SetBlipColour(policeBlip, 1)
                 SetBlipAsShortRange(policeBlip, true)
                 ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
-                -- cop sees you hit any entity with vehicle
+
+              -- cop sees you hit any entity with vehicle
               elseif HasEntityCollidedWithAnything(playerveh) then
                 ShowNotification("~r~Police~s~ witnessed bad driving!")
                 print(playerName .. "Police witnessed bad driving! cop (" .. ent .. ") dist (" .. dist .. ")")
@@ -177,7 +179,8 @@ Citizen.CreateThread(function()
                 SetBlipColour(policeBlip, 1)
                 SetBlipAsShortRange(policeBlip, true)
                 ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
-                -- cop sees you driving a known wanted vehicle (evaded successfully)
+
+              -- cop sees you driving a known wanted vehicle (evaded successfully)
               elseif IsVehicleWanted(playerveh) then
                 ShowNotification("~r~Police~s~ witnessed you driving a known wanted vehicle!")
                 print("Police witnessed " .. playerName .. " driving a known wanted vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
@@ -186,10 +189,11 @@ Citizen.CreateThread(function()
                 SetBlipColour(policeBlip, 1)
                 SetBlipAsShortRange(policeBlip, true)
                 ReportCrime(PlayerId(), 9, GetWantedLevelThreshold(1)) -- 9: ???
-                -- cop sees you burning out
+
+              -- cop sees you burning out
               elseif IsVehicleInBurnout(playerveh) then
-                BO_WarningCounter = BO_WarningCounter + 1
-                if BO_WarningCounter >= BO_WarningThreshold then
+                config.BO_WarningCounter = config.BO_WarningCounter + 1
+                if config.BO_WarningCounter >= config.BO_WarningThreshold then
                   ShowNotification("~r~Police~s~ witnessed your burnout!")
                   print("Police witnessed " .. playerName .. " doing a burnout! cop (" .. ent .. ") dist (" .. dist .. ")")
                   local policeBlip = AddBlipForEntity(ent)
@@ -197,12 +201,13 @@ Citizen.CreateThread(function()
                   SetBlipColour(policeBlip, 1)
                   SetBlipAsShortRange(policeBlip, true)
                   ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
-                  BO_WarningCounter = 0
+                  config.BO_WarningCounter = 0
                 end
-                -- cop sees your vehicle no on all wheels (air time)
+
+              -- cop sees your vehicle no on all wheels (air time)
               elseif not IsVehicleOnAllWheels(playerveh) then
-                TOG_WarningCounter = TOG_WarningCounter + 1
-                if TOG_WarningCounter >= TOG_WarningThreshold then
+                config.TOG_WarningCounter = config.TOG_WarningCounter + 1
+                if config.TOG_WarningCounter >= config.TOG_WarningThreshold then
                   ShowNotification("~r~Police~s~ witnessed reckless driving!")
                   print("Police witnessed tires off ground! cop (" .. ent .. ") dist (" .. dist .. ")")
                   local policeBlip = AddBlipForEntity(ent)
@@ -210,23 +215,22 @@ Citizen.CreateThread(function()
                   SetBlipColour(policeBlip, 1)
                   SetBlipAsShortRange(policeBlip, true)
                   ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
-                  WarningCounter = 0
+                  config.TOG_WarningCounter = 0
                 end
               end
-              -- cop sees you run a red light
+
+              -- cop sees you run a red light todo: make this a function
               local nearbyVehicles = {}
               for _, aiVehicle in pairs(GetGamePool("CVehicle")) do
                 if DoesEntityExist(aiVehicle) and aiVehicle ~= playerVehicle then
                   local aiCoords = GetEntityCoords(aiVehicle)
                   local aiHeading = GetEntityHeading(aiVehicle)
-
                   -- Check the distance between the player's vehicle and the AI vehicle
                   local playerCoords = GetEntityCoords(player, false)
                   local distance = #(playerCoords - aiCoords)
-
-                  if distance <= nearbyDistance then
+                  if distance <= config.nearbyDistance then
                     table.insert(nearbyVehicles, { vehicle = aiVehicle, heading = aiHeading, dist = distance })
-                    if debug_enabled then
+                    if config.debug_enabled then
                       print('Report System thread - PED vehicle found nearby (' .. aiVehicle .. ')')
                     end
                   end
@@ -239,20 +243,21 @@ Citizen.CreateThread(function()
                 local distance = aiData.dist
 
                 if aiVehicle and DoesEntityExist(aiVehicle) then
-                  if debug_enabled then
+                  if config.debug_enabled then
                     print('Report System thread - checking if vehicle is stopped at red light')
                   end
+
                   -- Check if the AI vehicle is stopped at a red light
                   if IsVehicleStoppedAtRedLight(aiVehicle) then
                     -- Collect the player heading
                     local playerHeading = GetEntityHeading(playerveh)
                     -- Calculate the angle difference between the AI vehicle and the player's vehicle
                     local angleDiff = math.abs(playerHeading - aiHeading)
-                    if debug_enabled then
-                      print('Report System thread - Red light calculation (' .. angleDiff .. ' <= ' .. angleThreshold .. ')')
+                    if config.debug_enabled then
+                      print('Report System thread - Red light calculation (' .. angleDiff .. ' <= ' .. config.angleThreshold .. ')')
                     end
                     -- Ensure the angle difference is within the threshold
-                    if angleDiff >= -angleThreshold and angleDiff <= angleThreshold then
+                    if angleDiff >= -config.angleThreshold and angleDiff <= config.angleThreshold then
                       -- The player ran a red light in front of the stopped AI vehicle
                       ShowNotification("~r~Police~s~ witnessed you running a red light!")
                       print("Police witnessed you running a red light! cop (" .. ent .. ") dist (" .. dist .. ")")
@@ -265,16 +270,20 @@ Citizen.CreateThread(function()
                   end
                 end
               end
+
             end
           end
         end
-      else -- non-moving violations (player not in vehicle)
-        -- line of sight has no limit on distance, so we manually set threshold
-        if dist < maxLosDist then
-          -- cop sees you fighting
+      else -- non-moving violations (player is not in vehicle)
+
+        -- line of sight has no limit so we manually set threshold
+        if dist < config.maxLosDist then
+          ---------------------------
+          -- cop sees you fighting --
+          ---------------------------
           if IsPedInMeleeCombat(ped) then
-            ShowNotification("Battery Violation! (~r~" .. speedmph .. " mph~s~)")
-            print(playerName .. " got a battery violation! (" .. speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
+            ShowNotification("~r~Police~s~ witnessed you attacking someone!")
+            print("Police witnessed " .. playerName .. " attacking someone! cop (" .. ent .. ") dist (" .. dist .. ")")
             local policeBlip = AddBlipForEntity(ent)
             SetBlipSprite(policeBlip, 8)
             SetBlipColour(policeBlip, 1)
@@ -282,6 +291,7 @@ Citizen.CreateThread(function()
             ReportCrime(PlayerId(), 11, GetWantedLevelThreshold(1)) -- 11: Assault on a civilian (a "2-40")
           end
         end
+
       end
     end
   end
