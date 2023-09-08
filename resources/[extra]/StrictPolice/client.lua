@@ -59,11 +59,16 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
         if angle <= fovAngle then
                 -- Perform line-of-sight check against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
                 local rayHandle = StartShapeTestLosProbe(pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, -1, ped, 0)
-                local _, _, _, _, hit = GetShapeTestResult(rayHandle)
+                local _, hit, _, _, _ = GetShapeTestResult(rayHandle)
+                if debug_enabled then
+                        print('IsPlayerInPedFOV() - rayHandle=' .. rayHandle .. ' ')
+                end
 
                 if hit then
+                        print('hit is true')
                         return false -- There's an obstruction in the line of sight
                 else
+                        print('hit is false')
                         if debug_enabled then
                                 print('IsPlayerInPedFOV() - Police PED can see the player!')
                         end
