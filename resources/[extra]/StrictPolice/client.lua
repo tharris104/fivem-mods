@@ -55,9 +55,6 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
         local angle = math.deg(math.acos(DotProduct3D(pedForwardVector, directionToPlayer)))
 
         if math.abs(angle) <= fovAngle then
-                if debug_enabled then
-                        print('IsPlayerInPedFOV() - Player is within PED FOV angle (' .. angle .. ' <= ' .. fovAngle .. ')')
-                end
                 local rayHandle = StartShapeTestLosProbe(pedCoords.x,pedCoords.y,pedCoords.z + 1.0,playerCoords.x,playerCoords.y,playerCoords.z + 1.0,-1,ped,4)
 
                 local result = -1
