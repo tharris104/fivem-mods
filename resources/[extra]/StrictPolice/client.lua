@@ -49,7 +49,7 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
         local pedForwardVector = GetEntityForwardVector(ped)
 
         local directionToPlayer = playerCoords - pedCoords
-        directionToPlayer = Normalize(directionToPlayer) -- Normalize the vector
+        directionToPlayer = directionToPlayer / #(directionToPlayer) -- Normalize the vector
 
         local angle = math.deg(math.acos(DotProduct3D(pedForwardVector, directionToPlayer)))
 
