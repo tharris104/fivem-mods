@@ -58,10 +58,10 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 local hash1 = GetHashKey("_CAST_RAY_POINT_TO_POINT")
                 local hash2 = GetHashKey("_GET_RAYCAST_RESULT")
                 if debug_enabled then
-                        print('IsPlayerInPedFOV() - Player in PED angle (' .. angle .. ' <= ' .. fovAngle .. ')')
-                        print('IsPlayerInPedFOV() - Starting shape test with parameters (' .. pedCoords.x .. ',' .. pedCoords.y .. ',' .. pedCoords.z + 1.0 .. ',' .. playerCoords.x .. ',' .. playerCoords.y .. ',' .. playerCoords.z + 1.0 .. ',' .. ped .. ')')
-                        print('_CAST_RAY_POINT_TO_POINT hash.. ' .. hash1)
-                        print('_GET_RAYCAST_RESULT hash.. ' .. hash2)
+                        print('IsPlayerInPedFOV() - Player is within PED FOV angle (' .. angle .. ' <= ' .. fovAngle .. ')')
+                        --print('IsPlayerInPedFOV() - Starting shape test with parameters (' .. pedCoords.x .. ',' .. pedCoords.y .. ',' .. pedCoords.z + 1.0 .. ',' .. playerCoords.x .. ',' .. playerCoords.y .. ',' .. playerCoords.z + 1.0 .. ',' .. ped .. ')')
+                        --print('_CAST_RAY_POINT_TO_POINT hash.. ' .. hash1)
+                        --print('_GET_RAYCAST_RESULT hash.. ' .. hash2)
                 end
                 -- Start shape test against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
                 --local rayHandle = StartExpensiveSynchronousShapeTestLosProbe(
