@@ -62,7 +62,7 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 local rayHandle = StartShapeTestLosProbe(pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, -1, 0, 4)
                 local result = -1
                 while result == -1 do
-                        Citizen.Wait(0) -- Yield to the game's main loop
+                        --Citizen.Wait(0) -- Yield to the game's main loop
                         retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
                 end
                 if retval == 0 then
