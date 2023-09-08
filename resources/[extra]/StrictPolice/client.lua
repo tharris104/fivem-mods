@@ -101,36 +101,37 @@ function GetClosestPolicePed(coords)
         local playerPed = PlayerPedId()
         coords = coords or GetEntityCoords(playerPed)
 
-        -- Get any type of human PED to start with
-        local retval, closestPed = GetClosestPed(coords.x, coords.y, coords.z, 100.0, true, false, false, false, 26)
+        local closestPed = nil
+        local closestDist = -1
+        for _, entity in pairs(GetGamePool("CPed")) do
+                local pedType = GetPedType(entity)
+                local distance = #(coords - GetEntityCoords(entity))
 
-        if retval then
-                local closestDist = #(coords - GetEntityCoords(closestPed))
+                if pedType == 6 or pedType == 27 or pedType == 29 then -- Cop, SWAT, Army
 
-                if DoesEntityExist(closestPed) then
-                        local entityPedType = GetPedType(closestPed)
-                        local distance = #(coords - GetEntityCoords(closestPed))
+                        print('found a Cop, SWAT, Army nearby')
+                        local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, policePedFOV)
+                        local isDead = IsEntityDead(entity)
 
-                        print('they do exist... type ' .. entityPedType)
-                        -- Check if the PED is a cop, swat, or army, and if it meets other conditions
-                        if (entityPedType == 6 or entityPedType == 27 or entityPedType == 29) then
-                                local isPlayerInFOV = IsPlayerInPedFOV(closestPed, playerPed, policePedFOV)
-                                local isDead = IsEntityDead(closestPed)
-
-                                if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
-                                        if debug_enabled then
-                                                print('GetClosestPolicePed() - closestPed (' .. closestPed .. ') closestDist (' .. closestDist .. ')')
-                                        end
-                                        return closestPed, closestDist
-                                end
+                        if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
+                                print('AHHHHHHHHHHHHHHHHHHHHH')
+                                closestPed = entity
+                                closestDist = distance
                         end
                 end
         end
 
-        if debug_enabled then
-                print('GetClosestPolicePed() - No suitable PED found nearby')
+        if closestPed then
+                if debug_enabled then
+                        print('GetClosestPolicePed() - closestPed (' .. closestPed .. ') closestDist (' .. closestDist .. ')')
+                end
+                return closestPed, closestDist
+        else
+                if debug_enabled then
+                        print('GetClosestPolicePed() - No suitable PED found nearby')
+                end
+                return nil, -1 -- Return nil and -1 if no suitable ped is found
         end
-        return nil, -1 -- Return nil and -1 if no suitable ped was found
 end
 
 
