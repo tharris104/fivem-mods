@@ -60,23 +60,27 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
 
                 -- start shape test against all relevant flags (-1) https://docs.fivem.net/natives/?_0x7EE9F5D83DD4F90E
                 local rayHandle = StartShapeTestLosProbe(pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, -1, 0, 4)
-                local _, _, _, _, hit = GetShapeTestResult(rayHandle)
-
-                if debug_enabled then
-                        if hit then
-                                print('IsPlayerInPedFOV() - rayHandle=' .. rayHandle .. ' hit=True')
-                        else
-                                print('IsPlayerInPedFOV() - rayHandle=' .. rayHandle .. ' hit=False')
-                        end
+                local result = -1
+                while result == -1 do
+                        Citizen.Wait(0) -- Yield to the game's main loop
+                        retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
                 end
-
-                if hit then
-                        return false -- There's an obstruction in the line of sight
-                else
+                if retval == 0 then
+                        -- The line of sight test did not hit anything
                         if debug_enabled then
                                 print('IsPlayerInPedFOV() - Police PED can see the player!')
                         end
                         return true -- There's a clear line of sight
+                elseif retval == 2 then
+                        -- The line of sight test completed successfully
+                        if debug_enabled then
+                                print('IsPlayerInPedFOV() - Police PED can not see player')
+                        end
+                        return false -- There's an obstruction in the line of sight
+                else
+                        if debug_enabled then
+                                print('IsPlayerInPedFOV() - something else is happening.......')
+                        end
                 end
         else
                 return false
@@ -123,15 +127,12 @@ function GetClosestPolicePed(coords)
 
                         local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, policePedFOV)
                         local isDead = IsEntityDead(entity)
-                        if isPlayerInFOV then
-                                print('isPlayerInFOV is true')
-                        else
-                                print('isPlayerInFOV is false')
-                        end
-                        if isDead then
-                                print('isDead() returned true')
-                        else
-                                print('isDead() returned false')
+                        if debug_enabled then
+                                if isPlayerInFOV then
+                                        print('GetClosestPolicePed() - isPlayerInFOV is true')
+                                else
+                                        print('GetClosestPolicePed() - isPlayerInFOV is false')
+                                end
                         end
 
                         if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
