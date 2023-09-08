@@ -106,25 +106,16 @@ function GetClosestPolicePed(coords)
 
         if retval then
                 local closestDist = #(coords - GetEntityCoords(closestPed))
-                local policePed = nil
 
-                if IsPedInAnyVehicle(closestPed, true) then
-                        policePed = GetPedInVehicleSeat(closestPed, -1)
-                        print('closest ped is in a vehicle')
-                else
-                        policePed = closestPed
-                        print('closest ped is on foot')
-                end
+                if DoesEntityExist(closestPed) then
+                        local entityPedType = GetPedType(closestPed)
+                        local distance = #(coords - GetEntityCoords(closestPed))
 
-                if DoesEntityExist(policePed) then
-                        local entityPedType = GetPedType(policePed)
-                        local distance = #(coords - GetEntityCoords(policePed))
-                        print('they do exist')
-
+                        print('they do exist... type ' .. entityPedType)
                         -- Check if the PED is a cop, swat, or army, and if it meets other conditions
                         if (entityPedType == 6 or entityPedType == 27 or entityPedType == 29) then
-                                local isPlayerInFOV = IsPlayerInPedFOV(policePed, playerPed, policePedFOV)
-                                local isDead = IsEntityDead(policePed)
+                                local isPlayerInFOV = IsPlayerInPedFOV(closestPed, playerPed, policePedFOV)
+                                local isDead = IsEntityDead(closestPed)
 
                                 if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
                                         if debug_enabled then
