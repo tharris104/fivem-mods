@@ -13,7 +13,7 @@ local config = {
 	copSpawnDistance    = 100.0,           -- Set the distance from the player where cops will spawn
 	copDespawnDistance  = 750.0,           -- Set the distance when cops are de-spawned
 	copDrivingStyle     = 1074528677,      -- https://vespura.com/fivem/drivingstyle/
-	showBlipsOnCops     = false,           -- show a constant blip on cops spawned from this script
+	showBlipsOnCops     = true,            -- show a constant blip on cops spawned from this script
 
     -- PED chat filter
     filterPedChat       = true,            -- Enable a filter for managing the phrases a PED can say

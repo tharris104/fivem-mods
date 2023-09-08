@@ -142,9 +142,6 @@ function GetClosestPolicePed(coords)
         if closestPed then
 
         else
-                if debug_enabled then
-                        print('GetClosestPolicePed() - No suitable PED found nearby')
-                end
                 return nil, -1 -- Return nil and -1 if no suitable ped is found
         end
 end
