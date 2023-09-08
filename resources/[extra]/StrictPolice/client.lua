@@ -87,7 +87,9 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 while result == -1 and timeoutCounter < timeoutThreshold do
                         Citizen.Wait(0) -- Yield to the game's main loop
                         retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
-                        print('hey boo boo... where did it go? retval ... ' .. retval)
+                        if retval == 2 then
+                                result = 1
+                        end
                         --retval, hit, endCoords, surfaceNormal, entityHit = Citizen.InvokeNative(hash2, rayHandle)
                         timeoutCounter = timeoutCounter + 1
                 end
