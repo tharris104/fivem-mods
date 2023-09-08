@@ -47,7 +47,6 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
         local pedCoords = GetEntityCoords(ped, false)
         local playerCoords = GetEntityCoords(player, false)
         local pedForwardVector = GetEntityForwardVector(ped)
-        print('Ped Forward Vector: ' .. pedForwardVector.x .. ', ' .. pedForwardVector.y .. ', ' .. pedForwardVector.z)
 
         local directionToPlayer = playerCoords - pedCoords
         directionToPlayer = directionToPlayer / #(directionToPlayer) -- Normalize the vector
@@ -67,8 +66,8 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                         playerCoords.x,
                         playerCoords.y,
                         playerCoords.z + 1.0,
-                        -1,
-                        0,
+                        4294967295,
+                        ped,
                         4
                 )
                 local result = -1
@@ -150,16 +149,14 @@ function GetClosestPolicePed(coords)
 
                 if pedType == 6 or pedType == 27 or pedType == 29 then -- Cop, SWAT, Army
 
-                        if debug_enabled then
-                                print('GetClosestPolicePed() - pedType is ' .. pedType)
-                        end
                         local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, policePedFOV)
                         local isDead = IsEntityDead(entity)
+
                         if debug_enabled then
                                 if isPlayerInFOV then
-                                        print('GetClosestPolicePed() - isPlayerInFOV is true')
+                                        print('GetClosestPolicePed() - isPlayerInFOV is (true).. pedType is (' .. pedType .. ')')
                                 else
-                                        print('GetClosestPolicePed() - isPlayerInFOV is false')
+                                        print('GetClosestPolicePed() - isPlayerInFOV is (false).. pedType is (' .. pedType .. ')')
                                 end
                         end
 
