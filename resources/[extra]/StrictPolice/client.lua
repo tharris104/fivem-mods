@@ -75,18 +75,19 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                 --        ped,
                 --        4
                 --)
-                local rayHandle = Citizen.InvokeNative(hash1, pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, 0, ped, 4)
+                --local rayHandle = Citizen.InvokeNative(hash1, pedCoords.x, pedCoords.y, pedCoords.z + 1.0, playerCoords.x, playerCoords.y, playerCoords.z + 1.0, 0, ped, 4)
+                local rayHandle = StartShapeTestCapsule(pedCoords.x,pedCoords.y,pedCoords.z + 1.0,playerCoords.x,playerCoords.y,playerCoords.z + 1.0,1,-1,ped,4)
 
                 local result = -1
-                local retval, hit, endCoords, surfaceNormal, entityHit -- Add local declarations here
+                local retval, hit, endCoords, surfaceNormal, entityHit -- local declarations here
 
                 local timeoutCounter = 0
                 local timeoutThreshold = 100 -- Adjust this value as needed
 
                 while result == -1 and timeoutCounter < timeoutThreshold do
                         Citizen.Wait(0) -- Yield to the game's main loop
-                        --retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
-                        retval, hit, endCoords, surfaceNormal, entityHit = Citizen.InvokeNative(hash2, rayHandle)
+                        retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
+                        --retval, hit, endCoords, surfaceNormal, entityHit = Citizen.InvokeNative(hash2, rayHandle)
                         timeoutCounter = timeoutCounter + 1
                 end
 
