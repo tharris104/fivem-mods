@@ -63,7 +63,7 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                         Citizen.Wait(0) -- yield to the game's main loop
                         retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHandle)
                         if retval == 2 then
-                                result = 1 -- 2 = successfully extracted test result
+                                result = 1
                         end
                         timeoutCounter = timeoutCounter + 1
                 end
@@ -75,14 +75,11 @@ function IsPlayerInPedFOV(ped, player, fovAngle)
                         return false
                 end
 
-                if retval == 2 then
+                if retval == 2 then  -- 2 means successfully extracted test result
                         if endCoords ~= vector3(0, 0, 0) and surfaceNormal ~= vector3(0, 0, 0) then
-                                return false
+                                return false  -- ped cannot see player
                         else
-                                if debug_enabled then
-                                        print('IsPlayerInPedFOV() - Police PED (' .. ped .. ') can see the player!')
-                                end
-                                return true
+                                return true  -- ped can see player
                         end
                 end
         else
@@ -134,15 +131,16 @@ function GetClosestPolicePed(coords)
                         if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
                                 closestPed = entity
                                 closestDist = distance
+                                if debug_enabled then
+                                        print('GetClosestPolicePed() - Police PED (' .. closestPed .. ') can see the player!')
+                                end
+                                return closestPed, closestDist
                         end
                 end
         end
 
         if closestPed then
-                if debug_enabled then
-                        print('GetClosestPolicePed() - closestPed (' .. closestPed .. ') closestDist (' .. closestDist .. ')')
-                end
-                return closestPed, closestDist
+
         else
                 if debug_enabled then
                         print('GetClosestPolicePed() - No suitable PED found nearby')
