@@ -7,5 +7,6 @@ version '1.0'
 
 client_scripts {
     '@NativeUI/NativeUI.lua',
-    'client.lua'
+    'bounties.lua',
+    'client.lua',
 }

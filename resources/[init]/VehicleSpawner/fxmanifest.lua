@@ -7,5 +7,6 @@ version '1.2.0'
 
 client_scripts {
     '@NativeUI/NativeUI.lua',
-    'client.lua'
+    'vehicles.lua',
+    'client.lua',
 }
