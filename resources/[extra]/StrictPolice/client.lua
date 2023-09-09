@@ -23,7 +23,7 @@ local function ShowNotification(text)
 end
 
 -- Function to round a float to the nearest decimal places
-local function round(num, numDecimalPlaces)
+local function Round(num, numDecimalPlaces)
   local mult = 10^(numDecimalPlaces or 0)
   return math.floor(num * mult + 0.5) / mult
 end
@@ -47,10 +47,10 @@ end
 local function IsPlayerInPedFOV(ped, player, fovAngle)
   local pedCoords = GetEntityCoords(ped, false)
   local playerCoords = GetEntityCoords(player, false)
-  local pedForwardVector = GetEntityForwardVector(ped)
+  local pedForwardVector = NormalizeVector(GetEntityForwardVector(ped))
   local directionToPlayer = playerCoords - pedCoords
-  directionToPlayer = directionToPlayer / #(directionToPlayer) -- normalize vector
-  local angle = math.deg(math.acos(DotProduct3D(pedForwardVector, directionToPlayer)))
+  local directionVector = NormalizeVector(directionToPlayer)
+  local angle = math.deg(math.acos(DotProduct3D(pedForwardVector, directionVector)))
 
   -- if player is within the ped's fov angle
   if math.abs(angle) <= fovAngle then
@@ -75,6 +75,10 @@ local function IsPlayerInPedFOV(ped, player, fovAngle)
         print('IsPlayerInPedFOV() - Line of sight test timed out.. retval=' .. retval .. ' hit=' .. tostring(hit) .. ' entityHit=' .. tostring(entityHit))
       end
       return false
+    end
+
+    if config.debug_enabled then
+      print('IsPlayerInPedFOV() - shapetest retval=' .. retval .. ' angle=' .. angle .. ' entityHit=' .. tostring(entityHit))
     end
 
     if retval == 2 then  -- 2 means successfully extracted test result
@@ -217,7 +221,7 @@ Citizen.CreateThread(function()
 
               -- cop sees you speeding in car
               if speedmph > config.globalSpeedLimit then
-                local rounded_speedmph = round(speedmph, 2)
+                local rounded_speedmph = Round(speedmph, 2)
                 ShowNotification("Speeding Violation! (~r~" .. rounded_speedmph .. " mph~s~)")
                 print(playerName .. " got a speeding violation! (" .. rounded_speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
                 ReportCrime(PlayerId(), 4, GetWantedLevelThreshold(1)) -- 4: Speeding vehicle (a "5-10")
