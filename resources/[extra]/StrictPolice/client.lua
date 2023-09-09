@@ -122,6 +122,9 @@ local function hasPlayerRunRedLight(playerVeh)
       -- Calculate the absolute heading diff
       local headingDiff = math.abs(playerHeading - aiHeading)
 
+      if config.debug_enabled then
+        print('hasPlayerRunRedLight() - PED vehicle nearby (' .. aiVehicle .. ') dist (' .. distance .. ') angle (' .. angle .. ') headingDiff (' .. headingDiff .. ')')
+      end
       if distance <= config.nearbyDistance and distance >= 5 then
         if angle <= config.fovAngle and headingDiff <= config.headingThreshold then
           if vehicleCount >= config.limitSearchVehicles then
@@ -129,9 +132,6 @@ local function hasPlayerRunRedLight(playerVeh)
           end
           table.insert(nearbyVehicles, { vehicle = aiVehicle, angle = angle, headingDiff = headingDiff })
           vehicleCount = vehicleCount + 1
-          if config.debug_enabled then
-            print('hasPlayerRunRedLight() - PED vehicle nearby (' .. aiVehicle .. ') angle (' .. angle .. ') headingDiff (' .. headingDiff .. ')')
-          end
         end
       end
     end
@@ -144,7 +144,14 @@ local function hasPlayerRunRedLight(playerVeh)
       local ent, dist = GetClosestPolicePed()
       -- dont continue if Police PED's cannot see the player
       if ent ~= -1 and dist ~= -1 then -- implies IsPlayerInPedFOV() is true
-        return true -- The player ran a red light in front of a stopped AI vehicle.. and a Police PED saw it
+        if config.debug_enabled then
+          print('hasPlayerRunRedLight() - The player ran a red light in front of a stopped AI vehicle.. and a Police PED saw you')
+        end
+        return true
+      else
+        if config.debug_enabled then
+          print('hasPlayerRunRedLight() - The player ran a red light in front of a stopped AI vehicle.. BUT no Police PED are nearby')
+        end
       end
     end
   end
