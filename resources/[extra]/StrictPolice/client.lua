@@ -10,6 +10,7 @@ local config = {
   VW_WarningThreshold = 10,  -- Threshold for wanted vehicle
   nearbyDistance = 100.0,    -- While driving, monitor vehicles nearby that are stopped at red light
   angleThreshold = 180.0,    -- If player passes this vehicle within set angle based on heading, report traffic violation
+  headingThreshold = 180.0,  -- Heading comparison between AI and player vehicles for determining direction
   limitSearchVehicles = 30,  -- Only ever test a maximum of 30 vehicles nearby to player for checking red light status
   maxLosDist = 60,           -- Global maximum line of sight for Police PED's
 }
@@ -110,6 +111,7 @@ local function GetClosestPolicePed(coords)
   end
 end
 
+-- Function for returning if Player has run a red light
 local function hasPlayerRunRedLight(playerVeh)
   local nearbyVehicles = {}
   local playerCoords = GetEntityCoords(player, false)
@@ -124,7 +126,8 @@ local function hasPlayerRunRedLight(playerVeh)
       local directionToPlayer = playerCoords - aiCoords -- Calculate the vector from AI vehicle to player
 
       -- Calculate the angle between AI vehicle's forward vector and direction to player
-      local angle = math.deg(math.acos(DotProduct3D(GetEntityForwardVector(aiVehicle), directionToPlayer)))
+      local angle = math.deg(math.acos(math.clamp(DotProduct3D(GetEntityForwardVector(aiVehicle), directionToPlayer), -1, 1)))
+
       -- Calculate the absolute heading diff
       local headingDiff = math.abs(playerHeading - aiHeading)
 
@@ -134,10 +137,13 @@ local function hasPlayerRunRedLight(playerVeh)
       if distance <= config.nearbyDistance and distance >= 5 then
         if angle <= config.fovAngle and headingDiff <= config.headingThreshold then
           if vehicleCount >= config.limitSearchVehicles then
-            break  -- break when limit is hit
+            break  -- break once limit is hit
           end
           table.insert(nearbyVehicles, { vehicle = aiVehicle, angle = angle, headingDiff = headingDiff })
           vehicleCount = vehicleCount + 1
+          if config.debug_enabled then
+            print('hasPlayerRunRedLight() - PED vehicle added to check (' .. aiVehicle .. ')')
+          end
         end
       end
     end
