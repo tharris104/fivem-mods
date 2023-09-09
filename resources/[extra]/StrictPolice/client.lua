@@ -143,9 +143,6 @@ local function hasPlayerRunRedLight(playerVeh)
       -- Calculate the absolute heading diff
       local headingDiff = math.abs(playerHeading - aiHeading)
 
-      if config.debug_enabled then
-        print('hasPlayerRunRedLight() - PED vehicle nearby (' .. aiVehicle .. ') dist (' .. distance .. ') angle (' .. angle .. ') headingDiff (' .. headingDiff .. ')')
-      end
       if distance <= config.nearbyDistance and distance >= 5 then
         if angle <= config.fovAngle and headingDiff <= config.headingThreshold then
           if vehicleCount >= config.limitSearchVehicles then
