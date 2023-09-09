@@ -11,7 +11,7 @@ Citizen.CreateThread(function()
     Citizen.Wait(5000) -- check every 5 seconds
     if not controlCleared then
       N_0x06462a961e94b67c(controlKeyHash) -- https://docs.fivem.net/natives/?_0x06462A961E94B67C
-      print('cleared keybind for INPUT_VEH_SELECT_PREV_WEAPON')
+      print('cleared keybind for ' .. controlKeyName)
 
       -- Disabling this - not sure if its even working or not
       -- N_0x5b73c77d9eb66e24(controlKeyHash, replaceKeyHash)
