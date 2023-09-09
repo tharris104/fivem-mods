@@ -26,6 +26,12 @@ local function DotProduct3D(a, b)
   return a.x * b.x + a.y * b.y + a.z * b.z
 end
 
+-- Function to round a float to the nearest decimal places
+local function round(num, numDecimalPlaces)
+  local mult = 10^(numDecimalPlaces or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
 -- Function for checking if a player is in the field of view of a ped (with raycasting)
 local function IsPlayerInPedFOV(ped, player, fovAngle)
   local pedCoords = GetEntityCoords(ped, false)
@@ -193,9 +199,16 @@ Citizen.CreateThread(function()
 
               -- cop sees you speeding in car
               if speedmph > config.globalSpeedLimit then
-                ShowNotification("Speeding Violation! (~r~" .. speedmph .. " mph~s~)")
-                print(playerName .. " got a speeding violation! (" .. speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
+                local rounded_speedmph = round(speedmph, 2)
+                ShowNotification("Speeding Violation! (~r~" .. rounded_speedmph .. " mph~s~)")
+                print(playerName .. " got a speeding violation! (" .. rounded_speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
                 ReportCrime(PlayerId(), 4, GetWantedLevelThreshold(1)) -- 4: Speeding vehicle (a "5-10")
+
+              -- cop sees you run a red light
+              elseif hasPlayerRunRedLight() then
+                ShowNotification("~r~Police~s~ witnessed you running a red light!")
+                print("Police witnessed you running a red light! cop (" .. ent .. ") dist (" .. dist .. ")")
+                ReportCrime(PlayerId(), 2, GetWantedLevelThreshold(1)) -- 2: Person ran a red light ("5-0-5")
 
               -- cop sees you doing a wheelie
               elseif GetVehicleWheelieState(playerveh) == 129 then
@@ -245,11 +258,6 @@ Citizen.CreateThread(function()
                   config.TOG_WarningCounter = 0 -- reset counter
                 end
 
-              -- cop sees you run a red light
-              elseif hasPlayerRunRedLight() then
-                ShowNotification("~r~Police~s~ witnessed you running a red light!")
-                print("Police witnessed you running a red light! cop (" .. ent .. ") dist (" .. dist .. ")")
-                ReportCrime(PlayerId(), 2, GetWantedLevelThreshold(1)) -- 2: Person ran a red light ("5-0-5")
               end
 
             end
@@ -263,10 +271,6 @@ Citizen.CreateThread(function()
           if IsPedInMeleeCombat(ped) then
             ShowNotification("~r~Police~s~ witnessed you attacking someone!")
             print("Police witnessed " .. playerName .. " attacking someone! cop (" .. ent .. ") dist (" .. dist .. ")")
-            local policeBlip = AddBlipForEntity(ent)
-            SetBlipSprite(policeBlip, 8)
-            SetBlipColour(policeBlip, 1)
-            SetBlipAsShortRange(policeBlip, true)
             ReportCrime(PlayerId(), 11, GetWantedLevelThreshold(1)) -- 11: Assault on a civilian (a "2-40")
           end
         end
