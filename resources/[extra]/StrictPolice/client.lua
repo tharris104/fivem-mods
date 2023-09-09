@@ -108,9 +108,9 @@ local function GetClosestPolicePed(coords)
       if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
         closestPed = entity
         closestDist = distance
-        if config.debug_enabled then
-          print('GetClosestPolicePed() - Police PED (' .. closestPed .. ') can see the player from distance (' .. distance .. ')')
-        end
+        --if config.debug_enabled then
+        --  print('GetClosestPolicePed() - Police PED (' .. closestPed .. ') can see the player from distance (' .. distance .. ')')
+        --end
         return closestPed, closestDist
       end
     end
@@ -202,9 +202,9 @@ Citizen.CreateThread(function()
         if dist < config.maxLosDist then
           -- if player is not already wanted
           if not IsPlayerWantedLevelGreater(PlayerId(), 0) then
-            if config.debug_enabled then
-              print('Report System thread - Police PED distance (' .. dist .. ') maxLosDist (' .. config.maxLosDist .. ')')
-            end
+            --if config.debug_enabled then
+            --  print('Report System thread - Police PED distance (' .. dist .. ') maxLosDist (' .. config.maxLosDist .. ')')
+            --end
             if vehicleClass == 14 or vehicleClass == 15 or vehicleClass == 16 or vehicleClass == 21 then
               -- vehicle is either a boat, helicopter, plane, or train... do nothing
               if config.debug_enabled then
