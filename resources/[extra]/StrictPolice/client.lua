@@ -22,15 +22,25 @@ local function ShowNotification(text)
   DrawNotification(false, false)
 end
 
+-- Function to round a float to the nearest decimal places
+local function round(num, numDecimalPlaces)
+  local mult = 10^(numDecimalPlaces or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
 -- Function to calculate dot product of two vectors
 local function DotProduct3D(a, b)
   return a.x * b.x + a.y * b.y + a.z * b.z
 end
 
--- Function to round a float to the nearest decimal places
-local function round(num, numDecimalPlaces)
-  local mult = 10^(numDecimalPlaces or 0)
-  return math.floor(num * mult + 0.5) / mult
+-- Function to normalize vectors passed
+local function NormalizeVector(vec)
+  local length = math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)
+  if length > 0 then
+    return { x = vec.x / length, y = vec.y / length, z = vec.z / length }
+  else
+    return { x = 0, y = 0, z = 0 } -- Avoid division by zero
+  end
 end
 
 -- Function for checking if a player is in the field of view of a ped (with raycasting)
@@ -124,9 +134,11 @@ local function hasPlayerRunRedLight(playerVeh)
       local aiHeading = GetEntityHeading(aiVehicle)
       local distance = #(playerCoords - aiCoords) -- Calulate the distance from AI vehicle to player
       local directionToPlayer = playerCoords - aiCoords -- Calculate the vector from AI vehicle to player
+      local forwardVector = NormalizeVector(GetEntityForwardVector(aiVehicle))
+      local directionVector = NormalizeVector(directionToPlayer)
 
       -- Calculate the angle between AI vehicle's forward vector and direction to player
-      local angle = math.deg(math.acos(math.clamp(DotProduct3D(GetEntityForwardVector(aiVehicle), directionToPlayer), -1, 1)))
+      local angle = math.deg(math.acos(DotProduct3D(forwardVector, directionVector)))
 
       -- Calculate the absolute heading diff
       local headingDiff = math.abs(playerHeading - aiHeading)
