@@ -7,4 +7,4 @@ version '1.0.0'
 
 resource_type 'gametype' { name = 'spawningCar' }
 
-client_script 'spawnCar.lua'
+client_script 'client.lua'

@@ -9,8 +9,8 @@ local config = {
   VW_WarningCounter = 0,     -- Counter for wanted vehicle
   VW_WarningThreshold = 10,  -- Threshold for wanted vehicle
   nearbyDistance = 100.0,    -- While driving, monitor vehicles nearby that are stopped at red light
-  angleThreshold = 180.0,    -- If player passes this vehicle within set angle based on heading, report traffic violation
-  headingThreshold = 180.0,  -- Heading comparison between AI and player vehicles for determining direction
+  angleThreshold = 90.0,     -- If player passes this vehicle within set angle based on heading, report traffic violation
+  headingThreshold = 90.0,   -- Heading comparison between AI and player vehicles for determining direction
   limitSearchVehicles = 30,  -- Only ever test a maximum of 30 vehicles nearby to player for checking red light status
   maxLosDist = 60,           -- Global maximum line of sight for Police PED's
 }
