@@ -14,7 +14,7 @@ local config = {
 -------------------------------------------------------------------------------------
 -- Define where bounty jobs can be accepted (coordinates)
 -- Typically located in Police stations
-bountyLocations = {
+local bountyLocations = {
     {x = 441.08, y = -981.33, z = 30.69},
 }
 
@@ -23,7 +23,7 @@ bountyLocations = {
 -- accuracyModifier = Set accuracy 0-100 (default is 50)
 -- deadOrAlive is pending code usage.. currently inactive
 -- If vehicle_model is passed, it will load the PED into the vehicle
-bounties = {
+local bounties = {
     {
         name = "John Doe",
         model = "a_m_m_hillbilly_01",
