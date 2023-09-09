@@ -1,3 +1,5 @@
+-- Vehicle names and spawncode
+-- Sub hash names are menu category titles
 menus = {
   ['Police Cars'] = {
     { name = 'Lamborghini Aventador', spawncode = 'nm_avent' },

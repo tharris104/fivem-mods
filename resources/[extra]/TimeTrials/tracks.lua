@@ -1,4 +1,3 @@
-
 -- Racing configuration, edit this to add or change races
 races = {
     {
