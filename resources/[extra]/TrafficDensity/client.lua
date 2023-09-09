@@ -96,7 +96,7 @@ Citizen.CreateThread(function()
         if config.showBlipsOnCops then
           local blip = AddBlipForEntity(vehicle)
           SetBlipSprite(blip, 56) -- Set the blip sprite to police blip
-          SetBlipColour(blip, 3)
+          SetBlipColour(blip, 26)
           SetBlipScale(blip, 0.5)
           table.insert(policeBlips, blip)
         end
