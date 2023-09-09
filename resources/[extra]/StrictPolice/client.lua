@@ -10,6 +10,7 @@ local config = {
   VW_WarningThreshold = 10,  -- Threshold for wanted vehicle
   nearbyDistance = 100.0,    -- While driving, monitor vehicles nearby that are stopped at red light
   angleThreshold = 180.0,    -- If player passes this vehicle within set angle based on heading, report traffic violation
+  limitSearchVehicles = 30,  -- Only ever test a maximum of 30 vehicles nearby to player for checking red light status
   maxLosDist = 60,           -- Global maximum line of sight for Police PED's
 }
 
@@ -107,7 +108,7 @@ local function hasPlayerRunRedLight(playerVeh)
   local nearbyVehicles = {}
   local playerCoords = GetEntityCoords(player, false)
   local playerHeading = GetEntityHeading(playerVeh)
-  local playerForwardVector = GetEntityForwardVector(playerVeh)
+  local vehicleCount = 0
 
   for _, aiVehicle in pairs(GetGamePool("CVehicle")) do
     if DoesEntityExist(aiVehicle) and aiVehicle ~= playerVeh then
@@ -118,31 +119,40 @@ local function hasPlayerRunRedLight(playerVeh)
 
       -- Calculate the angle between AI vehicle's forward vector and direction to player
       local angle = math.deg(math.acos(DotProduct3D(GetEntityForwardVector(aiVehicle), directionToPlayer)))
-      if distance <= config.nearbyDistance then
-        if angle <= config.fovAngle then
-          table.insert(nearbyVehicles, { vehicle = aiVehicle, angle = angle })
+      -- Calculate the absolute heading diff
+      local headingDiff = math.abs(playerHeading - aiHeading)
+
+      if distance <= config.nearbyDistance and distance >= 5 then
+        if angle <= config.fovAngle and headingDiff <= config.headingThreshold then
+          if vehicleCount >= config.limitSearchVehicles then
+            break  -- break when limit is hit
+          end
+          table.insert(nearbyVehicles, { vehicle = aiVehicle, angle = angle, headingDiff = headingDiff })
+          vehicleCount = vehicleCount + 1
           if config.debug_enabled then
-            print('hasPlayerRunRedLight() - PED vehicle nearby (' .. aiVehicle .. ') angle (' .. angle .. ') threshold (' .. config.angleThreshold .. ')')
+            print('hasPlayerRunRedLight() - PED vehicle nearby (' .. aiVehicle .. ') angle (' .. angle .. ') headingDiff (' .. headingDiff .. ')')
           end
         end
       end
     end
   end
 
+  -- Read the table data of vehicles nearby
   for _, aiData in pairs(nearbyVehicles) do
     local aiVehicle = aiData.vehicle
-    if aiVehicle and DoesEntityExist(aiVehicle) and IsVehicleStoppedAtTrafficLights(aiVehicle) then
-      if aiData.angle <= config.fovAngle then
-        return true -- The player ran a red light in front of a stopped AI vehicle
+    if DoesEntityExist(aiVehicle) and IsVehicleStoppedAtTrafficLights(aiVehicle) then
+      local ent, dist = GetClosestPolicePed()
+      -- dont continue if Police PED's cannot see the player
+      if ent ~= -1 and dist ~= -1 then -- implies IsPlayerInPedFOV() is true
+        return true -- The player ran a red light in front of a stopped AI vehicle.. and a Police PED saw it
       end
     end
   end
-
+  -- All tests have failed, return false
   return false
-
 end
 
--- Get the closest police within line of sight and reports crimes on player
+-- Find the closest Police PED within line of sight of player, and report crimes on player
 -- Crime types reference: https://docs.fivem.net/natives/?_0xE9B09589827545E7
 Citizen.CreateThread(function()
   while true do
@@ -153,24 +163,19 @@ Citizen.CreateThread(function()
 
     -- dont continue if Police PED's cannot see the player
     if ent ~= -1 and dist ~= -1 then
-      if config.debug_enabled then
-        print('Report System thread - Police ped (' .. ent ..') distance (' .. dist ..') can see the player')
-      end
 
-      -- traffic violations (is the player in a vehicle or getting in?)
+      -- traffic violations only (is the player in a vehicle or getting in?)
       if IsPedInAnyVehicle(PlayerPedId(), true) then
         -- collect more detailed info now
         local playerveh = GetVehiclePedIsUsing(playerPed)
         local speedmph = (GetEntitySpeed(playerveh) * 2.236936) -- https://docs.fivem.net/natives/?_0xD5037BA82E12416F
         local vehicleClass = GetVehicleClass(playerveh)
-
         -- line of sight has no limit so we manually set threshold
         if dist < config.maxLosDist then
           -- if player is not already wanted
           if not IsPlayerWantedLevelGreater(PlayerId(), 0) then
             if config.debug_enabled then
-              print('Report System thread - Police PED distance: ' .. dist)
-              print('Report System thread - Police PED max LOS:  ' .. config.maxLosDist)
+              print('Report System thread - Police PED distance (' .. dist .. ') maxLosDist (' .. config.maxLosDist .. ')')
             end
             if vehicleClass == 14 or vehicleClass == 15 or vehicleClass == 16 or vehicleClass == 21 then
               -- vehicle is either a boat, helicopter, plane, or train... do nothing
