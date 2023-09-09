@@ -81,9 +81,6 @@ local function IsPlayerInPedFOV(ped, player, fovAngle)
       if endCoords ~= vector3(0, 0, 0) and surfaceNormal ~= vector3(0, 0, 0) then
         return false  -- ped cannot see player
       else
-        if config.debug_enabled then
-          print('IsPlayerInPedFOV() - True! retval=' .. retval .. ' angle=' .. angle .. ' entityHit=' .. tostring(entityHit))
-        end
         return true  -- ped can see player
       end
     end
