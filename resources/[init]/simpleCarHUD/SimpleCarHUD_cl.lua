@@ -31,14 +31,14 @@ local seatbeltEjectAccel = 100.0            -- Acceleration threshold to eject p
 local seatbeltColorOn = {160, 255, 160}     -- Color used when seatbelt is on
 local seatbeltColorOff = {255, 96, 96}      -- Color used when seatbelt is off
 
--- CRUISE CONTROL PARAMETERS
+-- CRUISE CONTROL PARAMETERS (limits the vehicle speed)
 local cruiseInput = 116                     -- Toggle cruise on/off with left bracket ([) or A button (controller)
 local cruiseColorOn = {160, 255, 160}       -- Color used when seatbelt is on
-local cruiseColorOff = {255, 255, 255}      -- Color used when seatbelt is off
+local cruiseColorOff = {160, 255, 160}      -- Color used when seatbelt is off
 
 -- LOCATION AND TIME PARAMETERS
 local locationAlwaysOn = true               -- Always display location and time
-local locationColorText = {3, 90, 252}      -- Color used to display location and time
+local locationColorText = {3, 152, 252}      -- Color used to display location and time
 
 -- Lookup tables for direction and zone
 local directions = { [0] = 'N', [1] = 'NW', [2] = 'W', [3] = 'SW', [4] = 'S', [5] = 'SE', [6] = 'E', [7] = 'NE', [8] = 'N' } 
