@@ -12,6 +12,10 @@ local speedColorUnder = {255, 255, 255}     -- Color used to display speed when 
 local speedColorOver = {255, 96, 96}        -- Color used to display speed when over speedLimit
 
 -- FUEL PARAMETERS
+-- todo: separate fuel mod - should allow net events to be called (get fuel level / set fuel level)
+-- todo: separate fuel mod - allow the player to fill up at gas stations marked by coords ($$$ ? BankingDBSystem ?)
+-- todo: this mod should turn the HUD fuel level RED when lower than 20 %
+-- todo: this mod should notify thge player on screen (one time only) when lower than 10 %
 local fuelShowPercentage = true             -- Show fuel as a percentage (disabled shows fuel in liters)
 local fuelWarnLimit = 25.0                  -- Fuel limit for triggering warning color
 local fuelColorText = {255, 255, 255}       -- Color used to display fuel text
@@ -28,13 +32,13 @@ local seatbeltColorOn = {160, 255, 160}     -- Color used when seatbelt is on
 local seatbeltColorOff = {255, 96, 96}      -- Color used when seatbelt is off
 
 -- CRUISE CONTROL PARAMETERS
-local cruiseInput = 116                     -- Toggle cruise on/off with CAPSLOCK or A button (controller) (now its [)
+local cruiseInput = 116                     -- Toggle cruise on/off with left bracket ([) or A button (controller)
 local cruiseColorOn = {160, 255, 160}       -- Color used when seatbelt is on
 local cruiseColorOff = {255, 255, 255}      -- Color used when seatbelt is off
 
 -- LOCATION AND TIME PARAMETERS
-local locationAlwaysOn = false              -- Always display location and time
-local locationColorText = {255, 255, 255}   -- Color used to display location and time
+local locationAlwaysOn = true               -- Always display location and time
+local locationColorText = {3, 90, 252}      -- Color used to display location and time
 
 -- Lookup tables for direction and zone
 local directions = { [0] = 'N', [1] = 'NW', [2] = 'W', [3] = 'SW', [4] = 'S', [5] = 'SE', [6] = 'E', [7] = 'NE', [8] = 'N' } 
@@ -191,7 +195,7 @@ Citizen.CreateThread(function()
             locationText = (zoneNameFull == "" or zoneNameFull == nil) and (locationText) or (locationText .. " | " .. zoneNameFull)
 
             -- Update fuel when in a vehicle
-            if pedInVeh then
+            if IsPedInAnyVehicle(player, false) then -- cant rely on pedInVeh... GET_VEHICLE_FUEL_LEVEL: No such entity
                 local vehicle = GetVehiclePedIsIn(player, false)
                 if fuelShowPercentage then
                     -- Display remaining fuel as a percentage
