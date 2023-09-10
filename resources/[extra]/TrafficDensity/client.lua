@@ -9,7 +9,7 @@ local config = {
   trafficFrequency    = 1.0,             -- Native ambients - Built-in frequency of traffic (0.0 = no traffic, 1.0 = normal traffic)
   extraPoliceSpawns   = true,            -- Police PED spawner - Enable additional Police PED spawner
   maxPoliceSpawned    = 5,               -- Police PED spawner - Set the maximum number of cops to be spawned in area
-  copSpawnDistance    = 100.0,           -- Police PED spawner - Set the distance from the player where cops will spawn
+  copSpawnDistance    = 75.0,            -- Police PED spawner - Set the distance from the player where cops will spawn
   copDespawnDistance  = 750.0,           -- Police PED spawner - Set the distance when cops are de-spawned
   copDrivingStyle     = 1074528677,      -- Police PED spawner - https://vespura.com/fivem/drivingstyle/
   showBlipsOnCops     = true,            -- Police PED spawner - show a constant blip on cops spawned from this script
@@ -29,6 +29,51 @@ local config = {
 -- Local tables for storing data
 local spawnedPolice = {}
 local policeBlips = {}
+
+-- Function that returns a valid Z coordinate only if that point is not in water
+local function GetGroundZ(coords)
+  local result, groundZ = GetGroundZForCoords(coords.x, coords.y, coords.z)
+  local isInWater = IsPointInWater(coords.x, coords.y, coords.z)
+
+  if isInWater then
+    return false -- Point is in water
+  else
+    return true, vector3(coords.x, coords.y, groundZ) -- Point is on valid ground
+  end
+end
+
+local function GetRandomCoordsNearby(coords)
+  local spawnX, spawnY = coords.x, coords.y
+
+  while GetDistanceBetweenCoords(coords.x, coords.y, 0.0, spawnX, spawnY, 0.0, true) < config.copSpawnDistance do
+    spawnX = coords.x + math.random(-500, 500) -- Adjust the range as needed
+    spawnY = coords.y + math.random(-500, 500) -- Adjust the range as needed
+  end
+  return vector3(spawnX, spawnY, coords.z) -- Return the randomly generated values
+
+end
+
+local function GetNearbyVehicleHeading(coords)
+  local closestVehicle = nil
+  local closestDistance = math.huge
+
+  local vehicles = GetGamePool("CVehicle")
+  for _, vehicle in ipairs(vehicles) do
+    local vehicleCoords = GetEntityCoords(vehicle)
+    local distance = GetDistanceBetweenCoords(coords.x, coords.y, coords.z, vehicleCoords.x, vehicleCoords.y, vehicleCoords.z, true)
+    if distance < closestDistance then
+      closestVehicle = vehicle
+      closestDistance = distance
+    end
+  end
+
+  if closestVehicle then
+    local vehicleHeading = GetEntityHeading(closestVehicle)
+    return vehicleHeading
+  else
+    return 0.0 -- Default heading if no nearby vehicles found
+  end
+end
 
 Citizen.CreateThread(function()
   while true do
@@ -62,49 +107,58 @@ Citizen.CreateThread(function()
       -- Check the maximum number of cops spawned
       if #spawnedPolice < config.maxPoliceSpawned and GetDistanceBetweenCoords(playerPos.x, playerPos.y, playerPos.z, spawnX, spawnY, playerPos.z, true) > config.copSpawnDistance then
         local vehicleModel = "police3" -- Adjust the police vehicle model as needed
-        local pedModel = "s_m_y_cop_01" -- Adjust the police ped model as needed
+        local pedModel = "s_m_y_cop_01" -- Adjust the police ped model as needed todo: add more models
 
         RequestModel(vehicleModel)
         RequestModel(pedModel)
 
         while not HasModelLoaded(vehicleModel) or not HasModelLoaded(pedModel) do
-          Citizen.Wait(1)
+          Citizen.Wait(1000)
         end
 
-        -- Generate a random spawn location far from the player
-        -- todo: fix the spawn method... cars on roofs, people on roofs or just not even there at all.. they spawned into the ground bc its based on players z axis
-        local spawnX, spawnY = playerPos.x, playerPos.y
-        while GetDistanceBetweenCoords(playerPos.x, playerPos.y, 0.0, spawnX, spawnY, 0.0, true) < config.copSpawnDistance do
-          spawnX = playerPos.x + math.random(-500, 500) -- Adjust the range as needed
-          spawnY = playerPos.y + math.random(-500, 500) -- Adjust the range as needed
+        local isValidLocation, modifiedCoords
+        -- Generate a random spawn location away from the player
+        while isValidLocation == false do
+          local PoliceCoords = GetRandomCoordsNearby(playerPos)
+          isValidLocation, modifiedCoords = GetGroundZ(PoliceCoords)
+          if config.debug_enabled then
+            if isValidLocation then
+              print("Valid Location: ", modifiedCoords.x, modifiedCoords.y, modifiedCoords.z)
+            else
+              print("Invalid Location: In water")
+            end
+          end
         end
 
-        local vehicle = CreateVehicle(vehicleModel, spawnX, spawnY, playerPos.z, 0.0, true, true)
+        local closestHeading = GetNearbyVehicleHeading()
+        local vehicle = CreateVehicle(vehicleModel, modifiedCoords.x, modifiedCoords.y, modifiedCoords.z, closestHeading, true, true)
         local ped = CreatePedInsideVehicle(vehicle, 6, pedModel, -1, true, true)
         SetEntityAsMissionEntity(vehicle, true, true)
         SetEntityAsMissionEntity(ped, true, true)
 
-        if config.debug_enabled then
-          print('Main Thread - Police PED created (' .. ped .. ')')
-        end
+        if DoesEntityExist(ped) and DoesEntityExist(vehicle) then
+          if config.debug_enabled then
+            print('TrafficDensity - Police PED created (' .. ped .. ')')
+          end
 
-        -- Make the police ped enter the vehicle
-        TaskWarpPedIntoVehicle(ped, vehicle, -1)
+          -- Make the police ped enter the vehicle
+          TaskWarpPedIntoVehicle(ped, vehicle, -1)
 
-        -- Make the vehicle patrol randomly
-        local heading = GetEntityHeading(vehicle)
-        TaskVehicleDriveWander(ped, vehicle, 20.0, config.copDrivingStyle, heading)
+          -- Make the vehicle patrol randomly
+          local heading = GetEntityHeading(vehicle)
+          TaskVehicleDriveWander(ped, vehicle, 20.0, config.copDrivingStyle, heading)
 
-        -- Record and log spawned cop
-        table.insert(spawnedPolice, {vehicle, ped})
+          -- Record and log spawned cop
+          table.insert(spawnedPolice, {vehicle, ped})
 
-        -- Add a blip to the police vehicle
-        if config.showBlipsOnCops then
-          local blip = AddBlipForEntity(vehicle)
-          SetBlipSprite(blip, 56) -- Set the blip sprite to police blip
-          SetBlipColour(blip, 1)
-          SetBlipScale(blip, 0.5)
-          table.insert(policeBlips, blip)
+          -- Add a blip to the police vehicle
+          if config.showBlipsOnCops then
+            local blip = AddBlipForEntity(vehicle)
+            SetBlipSprite(blip, 56) -- Set the blip sprite to police blip
+            SetBlipColour(blip, 1)
+            SetBlipScale(blip, 0.5)
+            table.insert(policeBlips, blip)
+          end
         end
       end
 
