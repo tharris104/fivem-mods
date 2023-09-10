@@ -138,7 +138,7 @@ Citizen.CreateThread(function()
 
         if DoesEntityExist(ped) and DoesEntityExist(vehicle) then
           if config.debug_enabled then
-            print('TrafficDensity - Police PED created (' .. ped .. ')')
+            print('TrafficDensity - Police PED created (' .. ped .. ') in vehicle (' .. vehicle .. ') at (' .. modifiedCoords.x .. ',' .. modifiedCoords.y .. ',' .. modifiedCoords.z .. ')')
           end
 
           -- Make the police ped enter the vehicle
@@ -154,8 +154,9 @@ Citizen.CreateThread(function()
           -- Add a blip to the police vehicle
           if config.showBlipsOnCops then
             local blip = AddBlipForEntity(vehicle)
+            SetBlipAsFriendly(false)
             SetBlipSprite(blip, 56) -- Set the blip sprite to police blip
-            SetBlipColour(blip, 1)
+            SetBlipColour(blip, 2)
             SetBlipScale(blip, 0.5)
             table.insert(policeBlips, blip)
           end
