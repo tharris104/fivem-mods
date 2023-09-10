@@ -12,6 +12,7 @@ Citizen.CreateThread(function()
     if IsPlayerFreeAiming(playerPed) then
       local aiming, targetEntity = GetEntityPlayerIsFreeAimingAt(playerPed)
       if aiming then
+        print('Player robbing a entity')
         entity = targetEntity
       end
     end
@@ -22,7 +23,9 @@ Citizen.CreateThread(function()
         isAiming = true
         lastAimTime = GetGameTimer()
         pedToHoldUp = entity
-        TaskHandsUp(entity, -1, 0, -1, true) -- Raise hands up indefinitely
+        ClearPedTasks(pedToHoldUp) -- Clear any existing tasks
+        TaskHandsUp(pedToHoldUp, -1, 0, -1, true)
+        print('Holding up the PED')
       else
         -- Player continues to aim at the same PED
         local currentTime = GetGameTimer()
@@ -31,6 +34,7 @@ Citizen.CreateThread(function()
         if timeSinceAimStart >= 5000 then -- Adjust this time as needed
           UpdateTaskHandsUpDuration(pedToHoldUp, -1) -- Extend the duration
         end
+        print('Player stopped aiming at PED')
       end
     else
       -- Player is not aiming at a valid PED
