@@ -210,7 +210,8 @@ Citizen.CreateThread(function()
               if config.debug_enabled then
                 print('Report System thread - Police can see the player in either a boat, helicopter, plane, or train')
               end
-            else
+            elseif vehicleClass == 17 or vehicleClass == 18 or vehicleClass == 19 then
+              -- vehicle is either a service, emergency, or military class
 
               -- cop sees you speeding in car
               if speedmph > config.globalSpeedLimit then
@@ -274,7 +275,8 @@ Citizen.CreateThread(function()
                 end
 
               end
-
+            else
+              print("Off-duty police officer saw a player...")
             end
           end
         end
