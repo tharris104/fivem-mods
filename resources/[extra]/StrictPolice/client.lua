@@ -197,7 +197,8 @@ Citizen.CreateThread(function()
         -- collect more detailed info now
         local playerveh = GetVehiclePedIsUsing(playerPed)
         local speedmph = (GetEntitySpeed(playerveh) * 2.236936) -- https://docs.fivem.net/natives/?_0xD5037BA82E12416F
-        local vehicleClass = GetVehicleClass(playerveh)
+        local policeveh = GetVehiclePedIsIn(ent)
+        local vehicleClass = GetVehicleClass(policeveh)
         -- line of sight has no limit so we manually set threshold
         if dist < config.maxLosDist then
           -- if player is not already wanted
@@ -206,12 +207,12 @@ Citizen.CreateThread(function()
             --  print('Report System thread - Police PED distance (' .. dist .. ') maxLosDist (' .. config.maxLosDist .. ')')
             --end
             if vehicleClass == 14 or vehicleClass == 15 or vehicleClass == 16 or vehicleClass == 21 then
-              -- vehicle is either a boat, helicopter, plane, or train... do nothing
+              -- vehicle is either a boat, helicopter, plane, or train... todo: do something?
               if config.debug_enabled then
-                print('Report System thread - Police can see the player in either a boat, helicopter, plane, or train')
+                print('StrictPolice - Police can see the player from either a boat, helicopter, plane, or train...')
               end
             elseif vehicleClass == 17 or vehicleClass == 18 or vehicleClass == 19 then
-              -- vehicle is either a service, emergency, or military class
+              -- vehicle with police ped is either a service, emergency, or military class
 
               -- cop sees you speeding in car
               if speedmph > config.globalSpeedLimit then
@@ -276,16 +277,17 @@ Citizen.CreateThread(function()
 
               end
             else
-              print("Off-duty police officer saw a player...")
+              print("Off-duty police officer saw a player while driving " .. vehicleClass)
             end
           end
         end
-      else -- non-moving violations (player is not in vehicle)
+      else -- non-moving violations (player is not in a vehicle)
 
         -- line of sight has no limit so we manually set threshold
         if dist < config.maxLosDist then
+          print("Police PED on foot sees the player")
           -- cop sees you fighting
-          if IsPedInMeleeCombat(ped) then
+          if IsPedInMeleeCombat(playerPed) then  -- Change 'ped' to 'playerPed'
             ShowNotification("~r~Police~s~ witnessed you attacking someone!")
             print("Police witnessed " .. playerName .. " attacking someone! cop (" .. ent .. ") dist (" .. dist .. ")")
             ReportCrime(PlayerId(), 11, GetWantedLevelThreshold(1)) -- 11: Assault on a civilian (a "2-40")
