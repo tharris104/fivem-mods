@@ -130,7 +130,7 @@ Citizen.CreateThread(function()
           end
         end
 
-        local closestHeading = GetNearbyVehicleHeading()
+        local closestHeading = GetNearbyVehicleHeading(playerPos)
         local vehicle = CreateVehicle(vehicleModel, modifiedCoords.x, modifiedCoords.y, modifiedCoords.z, closestHeading, true, true)
         local ped = CreatePedInsideVehicle(vehicle, 6, pedModel, -1, true, true)
         SetEntityAsMissionEntity(vehicle, true, true)
