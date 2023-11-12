@@ -225,9 +225,9 @@ Citizen.CreateThread(function()
     Wait(1000) -- every 1 second
     local playerPed = PlayerPedId()
     local playerName = GetPlayerName(PlayerId())
-    local ent, dist = GetClosestPolicePed()
+    local ent, dist = GetClosestPolicePed() -- return single closted Police PED.. or not
 
-    -- dont continue if Police PED's cannot see the player
+    -- dont continue if Police PED cannot see the player
     if ent ~= -1 and dist ~= -1 then
 
       -- only continue if Police PED is on duty
