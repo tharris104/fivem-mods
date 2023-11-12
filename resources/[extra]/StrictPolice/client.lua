@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------------
+--------            Police PED can report custom crimes                      --------
+-------------------------------------------------------------------------------------
+-- Global config options
 local config = {
   debug_enabled = true,      -- Debug logs to console
   globalSpeedLimit = 70,     -- Global speed limit for any vehicle (simpleCarHUD sets this value also)
@@ -276,12 +280,10 @@ Citizen.CreateThread(function()
                 end
 
               end
-            else
-              print("Off-duty police officer saw a player while driving " .. vehicleClass)
             end
           end
         end
-      else -- non-moving violations (player is not in a vehicle)
+      else -- non-moving violations (player is on foot)
 
         -- line of sight has no limit so we manually set threshold
         if dist < config.maxLosDist then

@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------------
+--- Add blips at Police stations to accept bounty contracts and rewards           ---
+-------------------------------------------------------------------------------------
 -- Global configurations
 local config = {
     debug_enabled             = true,   -- Debug logging to local console

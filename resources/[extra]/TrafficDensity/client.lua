@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------
+-------- Configure PED density, spawn ambient events, spawn more Police      --------
 -------------------------------------------------------------------------------------
 -- Global config options
 local config = {
@@ -30,33 +30,37 @@ local config = {
 local spawnedPolice = {}
 local policeBlips = {}
 
+
 -- Function that returns a valid Z coordinate only if that point is not in water
 local function GetGroundZ(coords)
-  local result, groundZ = GetGroundZForCoords(coords.x, coords.y, coords.z)
-  local isInWater = IsPointInWater(coords.x, coords.y, coords.z)
+  --local result, groundZ = GetGroundZForCoords(coords.x, coords.y, coords.z)
+  local result, groundZ = GetGroundZFor_3dCoord(coords.x, coords.y, coords.z, true) -- ignoreWater = true
+  --local isInWater = IsPointInWater(coords.x, coords.y, coords.z)
 
-  if isInWater then
-    return false -- Point is in water
-  else
-    return true, vector3(coords.x, coords.y, groundZ) -- Point is on valid ground
-  end
+  --if isInWater then
+  --  result = false -- Point is in water
+  --else
+  --  result = true -- Point is on valid ground
+  --end
+  return result, vector3(coords.x, coords.y, groundZ)
 end
 
+
+-- Function that returns randomly generated coords within configured spwan distance
 local function GetRandomCoordsNearby(coords)
   local spawnX, spawnY = coords.x, coords.y
-
   while GetDistanceBetweenCoords(coords.x, coords.y, 0.0, spawnX, spawnY, 0.0, true) < config.copSpawnDistance do
     spawnX = coords.x + math.random(-500, 500) -- Adjust the range as needed
     spawnY = coords.y + math.random(-500, 500) -- Adjust the range as needed
   end
-  return vector3(spawnX, spawnY, coords.z) -- Return the randomly generated values
-
+  return vector3(spawnX, spawnY, coords.z)
 end
 
+
+-- Function that returns a vehicles heading nearby to coords passed in
 local function GetNearbyVehicleHeading(coords)
   local closestVehicle = nil
   local closestDistance = math.huge
-
   local vehicles = GetGamePool("CVehicle")
   for _, vehicle in ipairs(vehicles) do
     local vehicleCoords = GetEntityCoords(vehicle)
@@ -66,7 +70,6 @@ local function GetNearbyVehicleHeading(coords)
       closestDistance = distance
     end
   end
-
   if closestVehicle then
     local vehicleHeading = GetEntityHeading(closestVehicle)
     return vehicleHeading
@@ -75,12 +78,14 @@ local function GetNearbyVehicleHeading(coords)
   end
 end
 
+
+-- Main thread runs once per second
 Citizen.CreateThread(function()
   while true do
-    Citizen.Wait(1000) -- once per second
+    Citizen.Wait(1000)
     --------------------------------------------------------------------
     --------------------------------------------------------------------
-    -- ensure ambients spawn
+    -- Ensure ambients spawn
     SetCreateRandomCops(config.ambientEvents) -- https://docs.fivem.net/natives/?_0x102E68B2024D536D
     SetCreateRandomCopsNotOnScenarios(config.ambientEvents) --https://docs.fivem.net/natives/?_0x8A4986851C4EF6E7
     SetCreateRandomCopsOnScenarios(config.ambientEvents) -- https://docs.fivem.net/natives/?_0x444CB7D7DBE6973D
@@ -88,12 +93,12 @@ Citizen.CreateThread(function()
     SetRandomBoats(config.ambientEvents) -- https://docs.fivem.net/natives/?_0x84436EC293B1415F
     --------------------------------------------------------------------
     --------------------------------------------------------------------
-    -- modify built-in ped density
+    -- Modify built-in ped density
     SetPedDensityMultiplierThisFrame(config.pedFrequency) -- https://docs.fivem.net/natives/#_0x95E3D6257B166CF2
     SetScenarioPedDensityMultiplierThisFrame(config.pedFrequency, config.pedFrequency) -- https://docs.fivem.net/natives/#_0x7A556143A1C03898
     --------------------------------------------------------------------
     --------------------------------------------------------------------
-    -- modify built-in traffic density
+    -- Modify built-in traffic density
     SetAmbientVehicleRangeMultiplierThisFrame(config.trafficFrequency) -- https://docs.fivem.net/natives/?_0x90B6DA738A9A25DA
     SetRandomVehicleDensityMultiplierThisFrame(config.trafficFrequency) -- https://docs.fivem.net/natives/#_0xB3B3359379FE77D3
     SetParkedVehicleDensityMultiplierThisFrame(config.trafficFrequency) -- https://docs.fivem.net/natives/#_0xEAE6DCC7EEE3DB1D
@@ -116,9 +121,11 @@ Citizen.CreateThread(function()
           Citizen.Wait(1000)
         end
 
-        local isValidLocation, modifiedCoords
+        -- Initializing random spawn location
+        local isValidLocation, modifiedCoords = false, vector3(0.0, 0.0, 0.0)
+
         -- Generate a random spawn location away from the player
-        while isValidLocation == false do
+        while not isValidLocation do
           local PoliceCoords = GetRandomCoordsNearby(playerPos)
           isValidLocation, modifiedCoords = GetGroundZ(PoliceCoords)
           if config.debug_enabled then
