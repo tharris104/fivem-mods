@@ -33,15 +33,7 @@ local policeBlips = {}
 
 -- Function that returns a valid Z coordinate only if that point is not in water
 local function GetGroundZ(coords)
-  --local result, groundZ = GetGroundZForCoords(coords.x, coords.y, coords.z)
   local result, groundZ = GetGroundZFor_3dCoord(coords.x, coords.y, coords.z, true) -- ignoreWater = true
-  --local isInWater = IsPointInWater(coords.x, coords.y, coords.z)
-
-  --if isInWater then
-  --  result = false -- Point is in water
-  --else
-  --  result = true -- Point is on valid ground
-  --end
   return result, vector3(coords.x, coords.y, groundZ)
 end
 
@@ -145,7 +137,7 @@ Citizen.CreateThread(function()
 
         if DoesEntityExist(ped) and DoesEntityExist(vehicle) then
           if config.debug_enabled then
-            print('TrafficDensity - Police PED created (' .. ped .. ') in vehicle (' .. vehicle .. ') at (' .. modifiedCoords.x .. ',' .. modifiedCoords.y .. ',' .. modifiedCoords.z .. ')')
+            print('Police PED created (' .. ped .. ') in vehicle (' .. vehicle .. ') at (' .. modifiedCoords.x .. ',' .. modifiedCoords.y .. ',' .. modifiedCoords.z .. ')')
           end
 
           -- Make the police ped enter the vehicle

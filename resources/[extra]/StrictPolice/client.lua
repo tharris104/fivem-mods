@@ -184,6 +184,40 @@ local function hasPlayerRunRedLight(playerVeh)
   return false
 end
 
+
+-- Function for returning if Police PED is on duty
+local function isPoliceOnDuty(policePed)
+  -- Sometimes, police PED are spawned by the game in non-emergency vehicles
+  -- They are considered not on duty, so they wont report crimes!
+  if IsPedInAnyVehicle(policePed, true) then
+    local policeveh = GetVehiclePedIsIn(policePed)
+    local vehicleClass = GetVehicleClass(policeveh)
+    if vehicleClass == 14 or vehicleClass == 15 or vehicleClass == 16 or vehicleClass == 21 then
+      -- vehicle class is either boat, helicopter, plane, or train
+      if config.debug_enabled then
+        print('isPoliceOnDuty() - Police can see the player from either a boat, helicopter, plane, or train...')
+      end
+      return true -- disable this?
+    elseif vehicleClass == 17 or vehicleClass == 18 or vehicleClass == 19 then
+      -- vehicle class is either service, emergency, or military
+      if config.debug_enabled then
+        print('isPoliceOnDuty() - Police can see the player from either a service, emergency, or military vehicle...')
+      end
+      return true
+    else
+      -- all other vehicle class are considered off-duty
+      if config.debug_enabled then
+        print('isPoliceOnDuty() - Off-Duty Police PED can see the player.. and does nothing...')
+      end
+      return false
+    end
+  else
+    -- Police PED is on foot, but they are on duty!
+    return true
+  end
+end
+
+
 -- Find the closest Police PED within line of sight of player, and report crimes on player
 -- Crime types reference: https://docs.fivem.net/natives/?_0xE9B09589827545E7
 Citizen.CreateThread(function()
@@ -196,104 +230,106 @@ Citizen.CreateThread(function()
     -- dont continue if Police PED's cannot see the player
     if ent ~= -1 and dist ~= -1 then
 
-      -- traffic violations only (is the player in a vehicle or getting in?)
-      if IsPedInAnyVehicle(PlayerPedId(), true) then
-        -- collect more detailed info now
-        local playerveh = GetVehiclePedIsUsing(playerPed)
-        local speedmph = (GetEntitySpeed(playerveh) * 2.236936) -- https://docs.fivem.net/natives/?_0xD5037BA82E12416F
-        local policeveh = GetVehiclePedIsIn(ent)
-        local vehicleClass = GetVehicleClass(policeveh)
-        -- line of sight has no limit so we manually set threshold
-        if dist < config.maxLosDist then
-          -- if player is not already wanted
-          if not IsPlayerWantedLevelGreater(PlayerId(), 0) then
-            --if config.debug_enabled then
-            --  print('Report System thread - Police PED distance (' .. dist .. ') maxLosDist (' .. config.maxLosDist .. ')')
-            --end
-            if vehicleClass == 14 or vehicleClass == 15 or vehicleClass == 16 or vehicleClass == 21 then
-              -- vehicle is either a boat, helicopter, plane, or train... todo: do something?
-              if config.debug_enabled then
-                print('StrictPolice - Police can see the player from either a boat, helicopter, plane, or train...')
-              end
-            elseif vehicleClass == 17 or vehicleClass == 18 or vehicleClass == 19 then
-              -- vehicle with police ped is either a service, emergency, or military class
+      -- only continue if Police PED is on duty
+      if isPoliceOnDuty(ent) then
 
-              -- cop sees you speeding in car
-              if speedmph > config.globalSpeedLimit then
-                local rounded_speedmph = Round(speedmph, 2)
-                ShowNotification("Speeding Violation! (~r~" .. rounded_speedmph .. " mph~s~)")
-                print(playerName .. " got a speeding violation! (" .. rounded_speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
-                ReportCrime(PlayerId(), 4, GetWantedLevelThreshold(1)) -- 4: Speeding vehicle (a "5-10")
+        -- player traffic violations (is player in a vehicle or getting into one?)
+        if IsPedInAnyVehicle(PlayerPedId(), true) then
 
-              -- cop sees you run a red light
-              elseif hasPlayerRunRedLight() then
-                ShowNotification("~r~Police~s~ witnessed you running a red light!")
-                print("Police witnessed you running a red light! cop (" .. ent .. ") dist (" .. dist .. ")")
-                ReportCrime(PlayerId(), 2, GetWantedLevelThreshold(1)) -- 2: Person ran a red light ("5-0-5")
+          -- collect more detailed info now
+          local playerveh = GetVehiclePedIsUsing(playerPed)
+          local speedmph = (GetEntitySpeed(playerveh) * 2.236936) -- https://docs.fivem.net/natives/?_0xD5037BA82E12416F
 
-              -- cop sees you doing a wheelie
-              elseif GetVehicleWheelieState(playerveh) == 129 then
-                ShowNotification("~r~Police~s~ witnessed you doing a wheelie!")
-                print(playerName .. "Police witnessed you doing a wheelie! cop (" .. ent .. ") dist (" .. dist .. ")")
+          -- line of sight has no limit so we manually set threshold
+          if dist < config.maxLosDist then
+
+            -- cop sees you hit any entity with vehicle
+            if HasEntityCollidedWithAnything(playerveh) then
+              ShowNotification("~r~Police~s~ witnessed reckless driving!")
+              print(playerName .. "Police witnessed reckless driving! cop (" .. ent .. ") dist (" .. dist .. ")")
+              ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
+            end
+
+            -- cop sees you speeding in car
+            if speedmph > config.globalSpeedLimit then
+              local rounded_speedmph = Round(speedmph, 2)
+              ShowNotification("Speeding Violation! (~r~" .. rounded_speedmph .. " mph~s~)")
+              print(playerName .. " got a speeding violation! (" .. rounded_speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
+              ReportCrime(PlayerId(), 4, GetWantedLevelThreshold(1)) -- 4: Speeding vehicle (a "5-10")
+            end
+
+            -- cop sees you run a red light
+            if hasPlayerRunRedLight() then
+              ShowNotification("~r~Police~s~ witnessed you running a red light!")
+              print("Police witnessed you running a red light! cop (" .. ent .. ") dist (" .. dist .. ")")
+              ReportCrime(PlayerId(), 2, GetWantedLevelThreshold(1)) -- 2: Person ran a red light ("5-0-5")
+            end
+
+            -- cop sees you doing a wheelie
+            if GetVehicleWheelieState(playerveh) == 129 then
+              ShowNotification("~r~Police~s~ witnessed you doing a wheelie!")
+              print(playerName .. "Police witnessed you doing a wheelie! cop (" .. ent .. ") dist (" .. dist .. ")")
+              ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
+            end
+
+            -- cop sees you burning out
+            if IsVehicleInBurnout(playerveh) then
+              config.BO_WarningCounter = config.BO_WarningCounter + 1
+              if config.BO_WarningCounter >= config.BO_WarningThreshold then
+                ShowNotification("~r~Police~s~ witnessed your burnout!")
+                print("Police witnessed " .. playerName .. " doing a burnout! cop (" .. ent .. ") dist (" .. dist .. ")")
                 ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
-
-              -- cop sees you driving known stolen vehicle
-              elseif IsVehicleStolen(playerveh) then
-                ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
-                print(playerName .. "Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
-                ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
-
-              -- cop sees you hit any entity with vehicle
-              elseif HasEntityCollidedWithAnything(playerveh) then
-                ShowNotification("~r~Police~s~ witnessed bad driving!")
-                print(playerName .. "Police witnessed bad driving! cop (" .. ent .. ") dist (" .. dist .. ")")
-                ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
-
-              -- cop sees you driving a known wanted vehicle (evaded successfully)
-              elseif IsVehicleWanted(playerveh) then
-                config.VW_WarningCounter = config.VW_WarningCounter + 1
-                if config.VW_WarningCounter >= config.VW_WarningThreshold then
-                  ShowNotification("~r~Police~s~ witnessed you driving a known wanted vehicle!")
-                  print("Police witnessed " .. playerName .. " driving a known wanted vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
-                  ReportCrime(PlayerId(), 9, GetWantedLevelThreshold(1)) -- 9: ???
-                  config.VW_WarningCounter = 0 -- reset counter
-                end
-
-              -- cop sees you burning out
-              elseif IsVehicleInBurnout(playerveh) then
-                config.BO_WarningCounter = config.BO_WarningCounter + 1
-                if config.BO_WarningCounter >= config.BO_WarningThreshold then
-                  ShowNotification("~r~Police~s~ witnessed your burnout!")
-                  print("Police witnessed " .. playerName .. " doing a burnout! cop (" .. ent .. ") dist (" .. dist .. ")")
-                  ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
-                  config.BO_WarningCounter = 0 -- reset counter
-                end
-
-              -- cop sees your vehicle no on all wheels (air time)
-              elseif not IsVehicleOnAllWheels(playerveh) then
-                config.TOG_WarningCounter = config.TOG_WarningCounter + 1
-                if config.TOG_WarningCounter >= config.TOG_WarningThreshold then
-                  ShowNotification("~r~Police~s~ witnessed reckless driving!")
-                  print("Police witnessed tires off ground! cop (" .. ent .. ") dist (" .. dist .. ")")
-                  ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
-                  config.TOG_WarningCounter = 0 -- reset counter
-                end
-
+                config.BO_WarningCounter = 0 -- reset counter
               end
             end
-          end
-        end
-      else -- non-moving violations (player is on foot)
 
-        -- line of sight has no limit so we manually set threshold
-        if dist < config.maxLosDist then
-          print("Police PED on foot sees the player")
-          -- cop sees you fighting
-          if IsPedInMeleeCombat(playerPed) then  -- Change 'ped' to 'playerPed'
-            ShowNotification("~r~Police~s~ witnessed you attacking someone!")
-            print("Police witnessed " .. playerName .. " attacking someone! cop (" .. ent .. ") dist (" .. dist .. ")")
-            ReportCrime(PlayerId(), 11, GetWantedLevelThreshold(1)) -- 11: Assault on a civilian (a "2-40")
+            -- cop sees vehicle wheels off the ground (air time)
+            if not IsVehicleOnAllWheels(playerveh) then
+              config.TOG_WarningCounter = config.TOG_WarningCounter + 1
+              if config.TOG_WarningCounter >= config.TOG_WarningThreshold then
+                ShowNotification("~r~Police~s~ witnessed reckless driving!")
+                print("Police witnessed tires off ground! cop (" .. ent .. ") dist (" .. dist .. ")")
+                ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
+                config.TOG_WarningCounter = 0 -- reset counter
+              end
+            end
+
+            -- cop sees you driving a known wanted vehicle (evaded successfully)
+            if IsVehicleWanted(playerveh) then
+              config.VW_WarningCounter = config.VW_WarningCounter + 1
+              if config.VW_WarningCounter >= config.VW_WarningThreshold then
+                ShowNotification("~r~Police~s~ witnessed you driving a known wanted vehicle!")
+                print("Police witnessed " .. playerName .. " driving a known wanted vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
+                ReportCrime(PlayerId(), 9, GetWantedLevelThreshold(1)) -- 9: ???
+                config.VW_WarningCounter = 0 -- reset counter
+              end
+            end
+
+            -- cop sees you driving known stolen vehicle
+            if IsVehicleStolen(playerveh) then
+              ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
+              print(playerName .. "Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
+              ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
+            end
+
           end
+
+        -- player not in vehicle, non-moving violations
+        else
+
+          -- line of sight has no limit so we manually set threshold
+          if dist < config.maxLosDist then
+            if config.debug_enabled then
+              print("Police PED sees " .. playerName .. " on foot")
+            end
+            -- cop sees you fighting
+            if IsPedInMeleeCombat(playerPed) then  -- Change 'ped' to 'playerPed'
+              ShowNotification("~r~Police~s~ witnessed you attacking someone!")
+              print("Police witnessed " .. playerName .. " attacking someone! cop (" .. ent .. ") dist (" .. dist .. ")")
+              ReportCrime(PlayerId(), 11, GetWantedLevelThreshold(1)) -- 11: Assault on a civilian (a "2-40")
+            end
+          end
+
         end
 
       end
