@@ -1,5 +1,5 @@
 -- Filename to store scores
-local scoreFileName = "./scores.txt"
+local scoreFileName = "./cache/scores.txt"
 
 -- Colors for printing scores
 --local color_finish = {238, 198, 78}
