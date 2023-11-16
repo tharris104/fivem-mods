@@ -1,3 +1,4 @@
+      -- DISABLED FOR NOW... didnt work as expected :(
 ----------------------------------------
 -- Custom Key Bind Mappings for FiveM --
 ----------------------------------------
@@ -15,7 +16,8 @@ Citizen.CreateThread(function()
   while true do
     Citizen.Wait(5000) -- check every 5 seconds
     if not controlsBound then
-      -- DISABLED FOR NOW
+
+      -- DISABLED FOR NOW... didnt work as expected :(
 
       -- Unset a control key
       --N_0x06462a961e94b67c(controlKeyHash) -- https://docs.fivem.net/natives/?_0x06462A961E94B67C
