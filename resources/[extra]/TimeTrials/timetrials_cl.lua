@@ -23,43 +23,6 @@ local raceScoreColors = {
     {167, 112, 68, 255}
 }
 
-
--- Function to create a PED driver with a sports car
-function createPedDriver(x, y, z)
-    local ped = CreatePed(6, GetHashKey("a_m_y_business_01"), x, y, z, 0.0, true, false)
-    TaskWarpPedIntoVehicle(ped, createSportsCar(x, y, z + 5.0))
-    TaskVehicleDriveToCoord(ped, x + 50.0, y, z, 30.0, 1.0, GetEntityModel(createSportsCar(x, y, z + 5.0)), 16777216, 10.0, 10.0)
-end
-
-
--- Function to create PED drivers for the race
-function createPedDriversForRace(race)
-    for _, spawnPoint in ipairs(pedSpawnPoints) do
-        createPedDriver(spawnPoint.x, spawnPoint.y, spawnPoint.z)
-    end
-end
-
-
--- Function to handle player input (e key press)
-function handlePlayerInput()
-    if IsControlJustReleased(0, 38) then -- 38 is the control code for the 'E' key
-        for _, race in pairs(races) do
-            if race.isEnabled then
-                -- Create PED drivers for the race
-                createPedDriversForRace(race)
-
-                -- Other existing code to start the race...
-            end
-        end
-    end
-end
-
--- Add this function to create sports cars for PED drivers
-function createSportsCar(x, y, z)
-    local vehicle = CreateVehicle(GetHashKey("adder"), x, y, z, 0.0, true, false)
-    return vehicle
-end
-
 -- Create preRace thread
 Citizen.CreateThread(function()
     preRace()
