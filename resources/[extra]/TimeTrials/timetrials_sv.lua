@@ -42,9 +42,17 @@ Citizen.CreateThread(function()
     end
 end)
 
+
+-- Add a new server event to send PED information to clients
+RegisterServerEvent('raceSendPedInfo')
+AddEventHandler('raceSendPedInfo', function(pedInfo)
+    TriggerClientEvent('raceReceivePedInfo', -1, pedInfo)
+end)
+
+
 -- Save score and send chat message when player finishes
 RegisterServerEvent('racePlayerFinished')
-AddEventHandler('racePlayerFinished', function(source, message, title, newScore)
+AddEventHandler('racePlayerFinished', function(playerName, message, title, newScore, pedInfo)
     -- Get top car score for this race
     local msgAppend = ""
     local msgSource = source
@@ -82,4 +90,11 @@ AddEventHandler('racePlayerFinished', function(source, message, title, newScore)
     
     -- Trigger message to all players
     TriggerClientEvent('chatMessage', -1, "[RACE]", msgColor, message .. msgAppend)
+
+    -- Add this part to send PED information to clients
+    TriggerClientEvent('raceSendPedInfo', -1, pedInfo)
+
+    -- Trigger message to all players
+    TriggerClientEvent('chatMessage', -1, "[RACE]", msgColor, message .. msgAppend)
+
 end)
