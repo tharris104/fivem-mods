@@ -112,9 +112,6 @@ local function GetClosestPolicePed(coords)
       if not isDead and isPlayerInFOV and (closestDist == -1 or distance < closestDist) then
         closestPed = entity
         closestDist = distance
-        --if config.debug_enabled then
-        --  print('GetClosestPolicePed() - Police PED (' .. closestPed .. ') can see the player from distance (' .. distance .. ')')
-        --end
         return closestPed, closestDist
       end
     end
@@ -183,7 +180,6 @@ local function hasPlayerRunRedLight(playerVeh)
   -- All tests have failed, return false
   return false
 end
-
 
 -- Function for returning if Police PED is on duty
 local function isPoliceOnDuty(policePed)
@@ -333,6 +329,41 @@ Citizen.CreateThread(function()
         end
 
       end
+    end
+  end
+end)
+
+local playersWantedStatus = {}
+local function CheckWantedStatus(playerId)
+  local player = GetPlayerFromServerId(playerId)
+  if not player then
+    return
+  end
+  local playerPed = GetPlayerPed(-1)
+  local ent, dist = GetClosestPolicePed()
+  if ent ~= -1 and dist ~= -1 then
+    playersWantedStatus[playerId] = GetGameTimer()
+  else
+    local timer = playersWantedStatus[playerId]
+    if timer and GetGameTimer() - timer >= 3000 then
+      if IsPlayerWantedLevelGreater(player, 0) then
+        print('cannot clear players wanted level')
+      else
+        print('clearing player wanted level')
+        ClearPlayerWantedLevel(playerId)
+      end
+    end
+  end
+end
+
+Citizen.CreateThread(function()
+  while true do
+    Citizen.Wait(1000)
+
+    local playerId = NetworkGetPlayerIndexFromPed(GetPlayerPed(-1))
+
+    if playerId then
+      CheckWantedStatus(playerId)
     end
   end
 end)

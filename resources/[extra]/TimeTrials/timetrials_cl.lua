@@ -28,6 +28,61 @@ Citizen.CreateThread(function()
     preRace()
 end)
 
+
+-- Function to create a PED driver with a random sports car
+function createPedDriver(x, y, z, race)
+    local ped = CreatePed(6, GetHashKey("a_m_y_business_01"), x, y, z, 0.0, true, false)
+    local sportsCarModel = getRandomSportsCarModel()
+    print('Generating sports car model (' .. sportsCarModel .. ') for PED (' .. ped .. ')')
+    TaskWarpPedIntoVehicle(ped, createSportsCar(x, y, z + 5.0, sportsCarModel))
+    TaskVehicleDriveToCoord(ped, race.checkpoints[1].x, race.checkpoints[1].y, race.checkpoints[1].z, 30.0, 1.0, sportsCarModel, 16777216, 10.0, 10.0)
+end
+
+
+-- Function to create a sports car with a specific model
+function createSportsCar(x, y, z, model)
+    RequestModel(model)
+    while not HasModelLoaded(model) do
+        Wait(500)
+    end
+    local vehicle = CreateVehicle(model, x, y, z, 0.0, true, false)
+    print('returning vehicle ' .. vehicle )
+    return vehicle
+end
+
+
+-- Function to get a random sports car model
+function getRandomSportsCarModel()
+    local sportsCarModels = {
+        "adder",
+        "comet2",
+        "elegy2",
+        -- Add more models as needed
+    }
+    return sportsCarModels[math.random(#sportsCarModels)]
+end
+
+-- Function to create PED drivers for the race with random sports cars
+function createPedDriversForRace(race)
+    -- Get player's position as the reference point
+    local playerPos = GetEntityCoords(GetPlayerPed(-1))
+    -- Get player's heading as the reference point
+    local playerHeading = GetEntityHeading(GetPlayerPed(-1))
+    -- Define a distance in front of the player to spawn the PED drivers
+    local spawnDistance = 10.0
+    -- Calculate the spawn point based on the player's position
+    local spawnPoint = {
+        x = playerPos.x + spawnDistance * math.sin(playerHeading),
+        y = playerPos.y + spawnDistance * math.cos(playerHeading),
+        z = playerPos.z,
+    }
+    -- Create PED drivers at the calculated spawn point
+    for i = 1, race.numPedDrivers do
+        createPedDriver(spawnPoint.x, spawnPoint.y, spawnPoint.z, race)
+    end
+end
+
+
 -- Function that runs when a race is NOT active
 function preRace()
     -- Initialize race state
@@ -46,7 +101,7 @@ function preRace()
         local player = GetPlayerPed(-1)
 
         -- Teleport player to waypoint if active and button pressed
-        if IsWaypointActive() and IsControlJustReleased(0, 182) then
+        if IsWaypointActive() and IsControlJustReleased(0, 182) then -- (L) key
             -- Teleport player to waypoint
             local waypoint = GetFirstBlipInfoId(8)
             if DoesBlipExist(waypoint) then 
@@ -122,10 +177,12 @@ function preRace()
                 -- When close enough, prompt player
                 if GetDistanceBetweenCoords( race.start.x, race.start.y, race.start.z, GetEntityCoords(player)) < START_PROMPT_DISTANCE then
                     helpMessage("Press ~INPUT_CONTEXT~ to Race!")
-                    if (IsControlJustReleased(1, 51)) then
+                    if (IsControlJustReleased(1, 51)) then -- (E) key
                         -- Set race index, clear scores and trigger event to start the race
                         raceState.index = index
                         raceState.scores = nil
+                        -- Create PED drivers for the race
+                        createPedDriversForRace(race)
                         TriggerEvent("raceCountdown")
                         break
                     end
@@ -209,7 +266,7 @@ AddEventHandler("raceRaceActive", function()
             end
 
 --            -- Stop race when L is pressed, clear and reset everything
---            if IsControlJustReleased(0, 182) and GetLastInputMethod(0) then
+--            if IsControlJustReleased(0, 182) and GetLastInputMethod(0) then -- (L) key
 --                -- Delete checkpoint and raceState.blip
 --                DeleteCheckpoint(checkpoint)
 --                RemoveBlip(raceState.blip)
