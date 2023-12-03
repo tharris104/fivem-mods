@@ -4,16 +4,16 @@
 -- Global config options
 local config = {
   debug_enabled       = true,            -- Enable debug messages in console
-  ambientEvents       = false,            -- Native ambients - Enable built-in ambient events for realism
-  pedFrequency        = 0.0,             -- Native ambients - Built-in frequency of PED (0.0 = no peds, 1.0 = normal peds)
-  trafficFrequency    = 0.0,             -- Native ambients - Built-in frequency of traffic (0.0 = no traffic, 1.0 = normal traffic)
+  ambientEvents       = true,            -- Native ambients - Enable built-in ambient events for realism
+  pedFrequency        = 1.0,             -- Native ambients - Built-in frequency of PED (0.0 = no peds, 1.0 = normal peds)
+  trafficFrequency    = 1.0,             -- Native ambients - Built-in frequency of traffic (0.0 = no traffic, 1.0 = normal traffic)
   extraPoliceSpawns   = true,            -- Police PED spawner - Enable additional Police PED spawner
   maxPoliceSpawned    = 5,               -- Police PED spawner - Set the maximum number of cops to be spawned in area
-  copSpawnDistance    = 75.0,            -- Police PED spawner - Set the distance from the player where cops will spawn
+  copSpawnDistance    = 100.0,           -- Police PED spawner - Set the distance from the player where cops will spawn
   copDespawnDistance  = 750.0,           -- Police PED spawner - Set the distance when cops are de-spawned
   copDrivingStyle     = 1074528677,      -- Police PED spawner - https://vespura.com/fivem/drivingstyle/
-  showBlipsOnCops     = true,            -- Police PED spawner - show a constant blip on cops spawned from this script
-  filterPedChat       = true,            -- PED chat filter - Enable a filter for managing the phrases a PED can say
+  showBlipsOnCops     = false,           -- Police PED spawner - show a constant blip on cops spawned from this script
+  filterPedChat       = false,           -- PED chat filter - Enable a filter for managing the phrases a PED can say
   caseInsensitive     = true,            -- PED chat filter - Set to true to make filtering case-insensitive
   replacementPhrase   = 'I love you',    -- PED chat filter - Default phrase for PEDs when filtered words are encountered
   filteredWords       = {                -- PED chat filter - Add the words you want to filter
