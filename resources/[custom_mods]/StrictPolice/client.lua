@@ -313,8 +313,8 @@ Citizen.CreateThread(function()
 
             -- cop sees you driving known stolen vehicle
             if IsVehicleStolen(playerveh) then
-              config.SV_WarningCounter = config.SV_WarningCounter + 1
-              if config.SV_WarningCounter >= config.SV_WarningThreshold then
+              config.VS_WarningCounter = config.VS_WarningCounter + 1
+              if config.VS_WarningCounter >= config.VS_WarningThreshold then
                 ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
                 print("Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
                 ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
