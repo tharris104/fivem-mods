@@ -344,7 +344,6 @@ end)
 local playersWantedStatus = {}
 local function CheckWantedStatus(player)
   local playerPed = GetPlayerPed(-1)
-  local timer = playersWantedStatus[player]
   if IsPlayerWantedLevelGreater(player, 0) then
     local coords = GetEntityCoords(playerPed)
 
@@ -359,7 +358,7 @@ local function CheckWantedStatus(player)
             print('Police see the player, timer reset')
             playersWantedStatus[player] = nil -- Clear the time entry for the player
           else
-            if not timer then
+            if not playersWantedStatus[player] then
               print('Player out of sight, starting a new timer')
               playersWantedStatus[player] = GetGameTimer() -- Record the current time
             else
@@ -378,8 +377,9 @@ local function CheckWantedStatus(player)
     end
 
     -- Now check timer difference
-    local timediff = GetGameTimer() - timer
-    if timer and timediff >= config.clearWantedTime then
+    local timediff = GetGameTimer() - playersWantedStatus[player]
+    print('timediff ' .. timediff)
+    if timediff and timediff >= config.clearWantedTime then
       ClearPlayerWantedLevel(player)
       playersWantedStatus[player] = nil -- Clear the time entry for the player
       print('Player wanted level cleared....')
