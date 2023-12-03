@@ -251,9 +251,9 @@ Citizen.CreateThread(function()
 
             -- cop sees you speeding in car
             if speedmph > config.globalSpeedLimit then
-              --local rounded_speedmph = Round(speedmph, 2)
-              ShowNotification(playerName .. " recieved a speeding Violation! (~r~" .. speedmph .. " mph~s~)")
-              print(playerName .. " got a speeding violation! (" .. speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
+              local rounded_speedmph = Round(speedmph, 2)
+              ShowNotification(playerName .. " recieved a speeding Violation! (~r~" .. rounded_speedmph .. " mph~s~)")
+              print(playerName .. " got a speeding violation! (" .. rounded_speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
               ReportCrime(PlayerId(), 4, GetWantedLevelThreshold(1)) -- 4: Speeding vehicle (a "5-10")
             end
 
@@ -293,6 +293,13 @@ Citizen.CreateThread(function()
               end
             end
 
+            -- cop sees you stealing a vehicle
+            if IsPedTryingToEnterALockedVehicle(playerPed) then
+              ShowNotification("~r~Police~s~ witnessed " .. playerName .. " breaking into a vehicle!")
+              print("Police witnessed " .. playerName .. " breaking into a vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
+              ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
+            end
+
             -- cop sees you driving a known wanted vehicle (evaded successfully)
             if IsVehicleWanted(playerveh) then
               config.VW_WarningCounter = config.VW_WarningCounter + 1
@@ -304,13 +311,6 @@ Citizen.CreateThread(function()
               end
             end
 
-            -- cop sees you stealing a vehicle
-            if IsPedTryingToEnterALockedVehicle(playerPed) then
-              ShowNotification("~r~Police~s~ witnessed " .. playerName .. " breaking into a vehicle!")
-              print("Police witnessed " .. playerName .. " breaking into a vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
-              ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
-            end
-
             -- cop sees you driving known stolen vehicle
             if IsVehicleStolen(playerveh) then
               config.VS_WarningCounter = config.VS_WarningCounter + 1
@@ -318,6 +318,7 @@ Citizen.CreateThread(function()
                 ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
                 print("Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
                 ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
+                config.VS_WarningCounter = 0 -- reset counter
               end
             end
 
@@ -385,7 +386,7 @@ local function CheckWantedStatus(player)
             playersWantedStatus[player] = nil -- Clear the time entry for the player
           else
             if not timer then
-              print('Player out of sight, starting a new timer')
+              print('Player is now out of sight, starting a new timer')
               playersWantedStatus[player] = GetGameTimer() -- Record the current time
             end
           end
@@ -413,7 +414,7 @@ local function CheckWantedStatus(player)
         end
 
         playersWantedStatus[player] = nil -- Clear the time entry for the player
-        print('Player wanted level cleared....')
+        print('Player wanted level cleared!')
       end
     end
   end
