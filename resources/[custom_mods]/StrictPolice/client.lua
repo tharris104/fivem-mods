@@ -242,8 +242,8 @@ Citizen.CreateThread(function()
 
             -- cop sees you hit any entity with vehicle
             if HasEntityCollidedWithAnything(playerveh) then
-              ShowNotification("~r~Police~s~ witnessed reckless driving!")
-              print(playerName .. "Police witnessed reckless driving! cop (" .. ent .. ") dist (" .. dist .. ")")
+              ShowNotification("~r~Police~s~ witnessed an accident!")
+              print("Police witnessed reckless driving! cop (" .. ent .. ") dist (" .. dist .. ")")
               ReportCrime(PlayerId(), 3, GetWantedLevelThreshold(1)) -- 3: Reckless driver
             end
 
@@ -347,7 +347,7 @@ local function CheckWantedStatus(player)
   if IsPlayerWantedLevelGreater(player, 0) then
     print('player is wanted')
     local ent, dist = GetClosestPolicePed()
-    if ent == -1 and dist == -1 then
+    if not ent and not dist then
       print('player is out of sight. timer has started')
       local timer = playersWantedStatus[player]
       local timediff = GetGameTimer() - timer
