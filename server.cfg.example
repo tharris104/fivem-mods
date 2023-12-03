@@ -4,10 +4,11 @@ set mysql_connection_string "mysql://fivem:fivem@localhost/database_name?waitFor
 set mysql_ui true
 
 ## Custom Mods
+ensure [custom_00_init]
+ensure [custom_driving]
+ensure [custom_maps]
 ensure [custom_mods]
-ensure [custom_vehicles]
-ensure [vehicles]
-ensure [extra]
+ensure [custom_peds]
 
 ## Base Game Resources
 ensure [gameplay]
