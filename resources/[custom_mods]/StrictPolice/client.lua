@@ -304,23 +304,27 @@ Citizen.CreateThread(function()
 
             -- cop sees you driving a known wanted vehicle (evaded successfully)
             if IsVehicleWanted(playerveh) then
-              config.VW_WarningCounter = config.VW_WarningCounter + 1
-              if config.VW_WarningCounter >= config.VW_WarningThreshold then
-                ShowNotification("~r~Police~s~ witnessed " .. playerName .. " driving a known wanted vehicle!")
-                print("Police witnessed " .. playerName .. " driving a known wanted vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
-                ReportCrime(PlayerId(), 9, GetWantedLevelThreshold(1)) -- 9: ???
-                config.VW_WarningCounter = 0 -- reset counter
+              if not IsPlayerWantedLevelGreater(player, 0) then
+                config.VW_WarningCounter = config.VW_WarningCounter + 1
+                if config.VW_WarningCounter >= config.VW_WarningThreshold then
+                  ShowNotification("~r~Police~s~ witnessed " .. playerName .. " driving a known wanted vehicle!")
+                  print("Police witnessed " .. playerName .. " driving a known wanted vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
+                  ReportCrime(PlayerId(), 9, GetWantedLevelThreshold(1)) -- 9: ???
+                  config.VW_WarningCounter = 0 -- reset counter
+                end
               end
             end
 
             -- cop sees you driving known stolen vehicle
             if IsVehicleStolen(playerveh) then
-              config.VS_WarningCounter = config.VS_WarningCounter + 1
-              if config.VS_WarningCounter >= config.VS_WarningThreshold then
-                ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
-                print("Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
-                ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
-                config.VS_WarningCounter = 0 -- reset counter
+              if not IsPlayerWantedLevelGreater(player, 0) then
+                config.VS_WarningCounter = config.VS_WarningCounter + 1
+                if config.VS_WarningCounter >= config.VS_WarningThreshold then
+                  ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
+                  print("Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
+                  ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
+                  config.VS_WarningCounter = 0 -- reset counter
+                end
               end
             end
 
