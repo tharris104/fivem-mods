@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="1d6b92de-0ecb-45be-b711-60ae7294fad4" name="stimcube">
+        <fileTransfer accessType="SFTP" host="stimcube" port="22" sshConfigId="111dfa71-e99c-4d08-b796-faa0b09de34f" sshConfig="gtav@stimcube:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

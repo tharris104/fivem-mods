@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig host="stimcube" id="111dfa71-e99c-4d08-b796-faa0b09de34f" keyPath="C:\Users\toddh\.ssh\id_rsa" port="22" nameFormat="DESCRIPTIVE" username="gtav" />
+    </configs>
+  </component>
+</project>
