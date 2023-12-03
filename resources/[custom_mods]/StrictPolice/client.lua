@@ -360,22 +360,16 @@ local function CheckWantedStatus(player)
           local isDead = IsEntityDead(entity)
 
           if not isDead and isPlayerInFOV then
-            print('Police see the player, timer reset')
             playersWantedStatus[player] = nil -- Clear the time entry for the player
           else
             if not timer then
               print('Player out of sight, starting a new timer')
               playersWantedStatus[player] = GetGameTimer() -- Record the current time
-            else
-              print('Player out of sight, timer already started')
             end
           end
         else
           if not playersWantedStatus[player] then
-            print('Player is out of range, starting a new timer')
             playersWantedStatus[player] = GetGameTimer() -- Record the current time
-          else
-            print('Player is out of range, timer already started')
           end
         end
       end
@@ -384,15 +378,12 @@ local function CheckWantedStatus(player)
     -- Now check timer difference
     if timer then
       local timediff = GetGameTimer() - timer
-      print('timer running.. timediff ' .. timediff)
 
       if timediff >= config.clearWantedTime then
         ClearPlayerWantedLevel(player)
         playersWantedStatus[player] = nil -- Clear the time entry for the player
         print('Player wanted level cleared....')
       end
-    else
-      print('Player has no timer set')
     end
   end
 end
