@@ -342,26 +342,22 @@ Citizen.CreateThread(function()
 end)
 
 local playersWantedStatus = {}
-local function CheckWantedStatus(playerId)
-  local player = GetPlayerFromServerId(playerId)
-  if not player then
-    return
-  end
+local function CheckWantedStatus(player)
   local playerPed = GetPlayerPed(-1)
   if IsPlayerWantedLevelGreater(player, 0) then
     print('player is wanted')
     local ent, dist = GetClosestPolicePed()
-    if ent ~= -1 and dist ~= -1 then
-      print('player is out of sight. timer started')
-      playersWantedStatus[playerId] = GetGameTimer() -- record the time
-    else
-      local timer = playersWantedStatus[playerId]
+    if ent == -1 and dist == -1 then
+      print('player is out of sight. timer has started')
+      local timer = playersWantedStatus[player]
       local timediff = GetGameTimer() - timer
       print('checking timediff (' .. timediff .. ')')
       if timer and timediff >= config.clearWantedTime then
-        ClearPlayerWantedLevel(playerId)
-        playersWantedStatus[playerId] = nil -- Clear the time entry for the player
+        ClearPlayerWantedLevel(player)
+        playersWantedStatus[player] = nil -- Clear the time entry for the player
         print('player wanted level cleared....')
+      elseif not timer then
+        playersWantedStatus[player] = GetGameTimer() -- record the current time
       end
     end
   end
@@ -370,11 +366,7 @@ end
 Citizen.CreateThread(function()
   while true do
     Citizen.Wait(1000)
-
-    local playerId = NetworkGetPlayerIndexFromPed(GetPlayerPed(-1))
-
-    if playerId then
-      CheckWantedStatus(playerId)
-    end
+    local player = PlayerId()
+    CheckWantedStatus(player)
   end
 end)
