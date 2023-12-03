@@ -17,7 +17,7 @@ local config = {
   headingThreshold = 90.0,   -- Heading comparison between AI and player vehicles for determining direction
   limitSearchVehicles = 30,  -- Only ever test a maximum of 30 vehicles nearby to player for checking red light status
   maxLosDist = 60,           -- Global maximum line of sight for Police PED's
-  clearWantedTime = 5000,    -- Time in milliseconds to clear wanted level if out of sight
+  clearWantedTime = 10000,   -- Time in milliseconds to clear wanted level once out of sight
 }
 
 -- Function for displaying notifications to player
@@ -256,11 +256,11 @@ Citizen.CreateThread(function()
             end
 
             -- cop sees you run a red light
-            if hasPlayerRunRedLight() then
-              ShowNotification("~r~Police~s~ witnessed you running a red light!")
-              print("Police witnessed you running a red light! cop (" .. ent .. ") dist (" .. dist .. ")")
-              ReportCrime(PlayerId(), 2, GetWantedLevelThreshold(1)) -- 2: Person ran a red light ("5-0-5")
-            end
+--            if hasPlayerRunRedLight() then
+--              ShowNotification("~r~Police~s~ witnessed you running a red light!")
+--              print("Police witnessed you running a red light! cop (" .. ent .. ") dist (" .. dist .. ")")
+--              ReportCrime(PlayerId(), 2, GetWantedLevelThreshold(1)) -- 2: Person ran a red light ("5-0-5")
+--            end
 
             -- cop sees you doing a wheelie
             if GetVehicleWheelieState(playerveh) == 129 then
@@ -302,12 +302,19 @@ Citizen.CreateThread(function()
               end
             end
 
-            -- cop sees you driving known stolen vehicle
-            if IsVehicleStolen(playerveh) then
-              ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
-              print(playerName .. "Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
+            -- cop sees you stealing a vehicle
+            if IsPedTryingToEnterALockedVehicle(playerPed) then
+              ShowNotification("~r~Police~s~ witnessed you breaking into a vehicle!")
+              print(playerName .. "Police witnessed you breaking into a vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
               ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
             end
+
+            -- cop sees you driving known stolen vehicle
+--            if IsVehicleStolen(playerveh) then
+--              ShowNotification("~r~Police~s~ witnessed you driving a stolen vehicle!")
+--              print(playerName .. "Police witnessed you driving a stolen vehicle! cop (" .. ent .. ") dist (" .. dist .. ")")
+--              ReportCrime(PlayerId(), 7, GetWantedLevelThreshold(1)) -- 7: Vehicle theft (a "5-0-3")
+--            end
 
           end
 
