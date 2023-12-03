@@ -320,10 +320,12 @@ Citizen.CreateThread(function()
               print("Police PED sees " .. playerName .. " on foot")
             end
             -- cop sees you fighting
-            if IsPedInMeleeCombat(playerPed) then  -- Change 'ped' to 'playerPed'
-              ShowNotification("~r~Police~s~ witnessed you attacking someone!")
-              print("Police witnessed " .. playerName .. " attacking someone! cop (" .. ent .. ") dist (" .. dist .. ")")
-              ReportCrime(PlayerId(), 11, GetWantedLevelThreshold(1)) -- 11: Assault on a civilian (a "2-40")
+            if IsPedInMeleeCombat(playerPed) then
+              if IsPedPerformingMeleeAction(playerPed) then
+                ShowNotification("~r~Police~s~ witnessed you attacking someone!")
+                print("Police witnessed " .. playerName .. " attacking someone! cop (" .. ent .. ") dist (" .. dist .. ")")
+                ReportCrime(PlayerId(), 11, GetWantedLevelThreshold(1)) -- 11: Assault on a civilian (a "2-40")
+                end
             end
           end
 
