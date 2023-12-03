@@ -350,6 +350,16 @@ end)
 
 local playersWantedStatus = {}
 
+local function ClearPoliceTasks(policePed)
+  -- Clear all tasks for the police NPC
+  ClearPedTasks(policePed)
+  ClearPedSecondaryTask(policePed)
+  TaskClearLookAt(policePed)
+  TaskClearLookAt(policePed)
+  TaskSmartFleePed(policePed, PlayerPedId(), 1000.0, -1, true, true)
+  ClearPedTasksImmediately(policePed)
+end
+
 local function CheckWantedStatus(player)
   local playerPed = GetPlayerPed(-1)
 
@@ -388,6 +398,15 @@ local function CheckWantedStatus(player)
 
       if timediff >= config.clearWantedTime then
         ClearPlayerWantedLevel(player)
+
+        -- Clear tasks for police NPCs
+        for _, entity in pairs(GetGamePool("CPed")) do
+          local pedType = GetPedType(entity)
+          if pedType == 6 or pedType == 27 or pedType == 29 then
+            ClearPoliceTasks(entity)
+          end
+        end
+
         playersWantedStatus[player] = nil -- Clear the time entry for the player
         print('Player wanted level cleared....')
       end
