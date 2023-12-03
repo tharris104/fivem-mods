@@ -377,12 +377,16 @@ local function CheckWantedStatus(player)
     end
 
     -- Now check timer difference
-    local timediff = GetGameTimer() - playersWantedStatus[player]
-    print('timediff ' .. timediff)
-    if timediff and timediff >= config.clearWantedTime then
-      ClearPlayerWantedLevel(player)
-      playersWantedStatus[player] = nil -- Clear the time entry for the player
-      print('Player wanted level cleared....')
+    if playersWantedStatus[player] ~= nil then
+      local timediff = GetGameTimer() - playersWantedStatus[player]
+      print('timer running.. timediff ' .. timediff)
+      if timediff and timediff >= config.clearWantedTime then
+        ClearPlayerWantedLevel(player)
+        playersWantedStatus[player] = nil -- Clear the time entry for the player
+        print('Player wanted level cleared....')
+      end
+    else
+      print('player has no timer set')
     end
   end
 end
