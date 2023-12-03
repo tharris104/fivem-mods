@@ -346,7 +346,8 @@ local function CheckWantedStatus(player)
   local playerPed = GetPlayerPed(-1)
   local timer = playersWantedStatus[player]
   if IsPlayerWantedLevelGreater(player, 0) then
-    coords = GetEntityCoords(player)
+    local coords = GetEntityCoords(playerPed)
+
     for _, entity in pairs(GetGamePool("CPed")) do
       local pedType = GetPedType(entity)
       local distance = #(coords - GetEntityCoords(entity))
@@ -355,32 +356,33 @@ local function CheckWantedStatus(player)
           local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, config.policePedFOV)
           local isDead = IsEntityDead(entity)
           if not isDead and isPlayerInFOV then
-            print('police see the player, timer reset')
-            timer = nil -- Clear the time entry for the player
+            print('Police see the player, timer reset')
+            playersWantedStatus[player] = nil -- Clear the time entry for the player
           else
             if not timer then
-              print('player out of sight, starting a new timer')
-              timer = GetGameTimer() -- record the current time
+              print('Player out of sight, starting a new timer')
+              playersWantedStatus[player] = GetGameTimer() -- Record the current time
             else
-              print('player out of sight, timer already started')
+              print('Player out of sight, timer already started')
             end
           end
         else
           if not timer then
-            print('player is out of range, starting a new timer')
-            timer = GetGameTimer() -- record the current time
+            print('Player is out of range, starting a new timer')
+            playersWantedStatus[player] = GetGameTimer() -- Record the current time
           else
-            print('player is out of range, timer already started')
+            print('Player is out of range, timer already started')
           end
         end
       end
     end
-    -- now check timer difference
+
+    -- Now check timer difference
     local timediff = GetGameTimer() - timer
     if timer and timediff >= config.clearWantedTime then
       ClearPlayerWantedLevel(player)
       playersWantedStatus[player] = nil -- Clear the time entry for the player
-      print('player wanted level cleared....')
+      print('Player wanted level cleared....')
     end
   end
 end
