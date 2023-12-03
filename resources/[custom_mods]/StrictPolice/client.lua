@@ -3,7 +3,7 @@
 -------------------------------------------------------------------------------------
 -- Global config options
 local config = {
-  debug_enabled = true,      -- Debug logs to console
+  debug_enabled = false,     -- Debug logs to console
   globalSpeedLimit = 70,     -- Global speed limit for any vehicle (simpleCarHUD sets this value also)
   policePedFOV = 90.0,       -- FOV angle at which PED can see player based on heading
   TOG_WarningCounter = 0,    -- Counter for tires off the ground

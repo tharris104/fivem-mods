@@ -3,7 +3,7 @@
 -------------------------------------------------------------------------------------
 -- Global config options
 local config = {
-  debug_enabled       = true,            -- Enable debug messages in console
+  debug_enabled       = false,           -- Enable debug messages in console
   ambientEvents       = true,            -- Native ambients - Enable built-in ambient events for realism
   pedFrequency        = 1.0,             -- Native ambients - Built-in frequency of PED (0.0 = no peds, 1.0 = normal peds)
   trafficFrequency    = 1.0,             -- Native ambients - Built-in frequency of traffic (0.0 = no traffic, 1.0 = normal traffic)
