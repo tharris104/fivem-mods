@@ -1,0 +1,17 @@
+## Load core mods and set MySQL connection string
+ensure [core]
+set mysql_connection_string "mysql://fivem:fivem@localhost/database_name?waitForConnections=true&charset=utf8mb4"
+set mysql_ui true
+
+## Custom Mods
+ensure [custom_mods]
+ensure [custom_vehicles]
+ensure [vehicles]
+ensure [extra]
+
+## Base Game Resources
+ensure [gameplay]
+ensure [defaultmaps]
+ensure [gamemodes]
+ensure [managers]
+ensure [system]
