@@ -342,6 +342,7 @@ local function CheckWantedStatus(playerId)
   end
   local playerPed = GetPlayerPed(-1)
   if IsPlayerWantedLevelGreater(player, 0) then
+    print('player is wanted')
     local ent, dist = GetClosestPolicePed()
     if ent ~= -1 and dist ~= -1 then
       print('player is out of sight. timer started')
