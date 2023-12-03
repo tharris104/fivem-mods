@@ -342,23 +342,28 @@ Citizen.CreateThread(function()
 end)
 
 local playersWantedStatus = {}
+
 local function CheckWantedStatus(player)
   local playerPed = GetPlayerPed(-1)
+
   if IsPlayerWantedLevelGreater(player, 0) then
     local coords = GetEntityCoords(playerPed)
+    local timer = playersWantedStatus[player]
 
     for _, entity in pairs(GetGamePool("CPed")) do
       local pedType = GetPedType(entity)
       local distance = #(coords - GetEntityCoords(entity))
+
       if pedType == 6 or pedType == 27 or pedType == 29 then -- Cop, SWAT, Army
         if distance <= 30.0 then
           local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, config.policePedFOV)
           local isDead = IsEntityDead(entity)
+
           if not isDead and isPlayerInFOV then
             print('Police see the player, timer reset')
             playersWantedStatus[player] = nil -- Clear the time entry for the player
           else
-            if not playersWantedStatus[player] then
+            if not timer then
               print('Player out of sight, starting a new timer')
               playersWantedStatus[player] = GetGameTimer() -- Record the current time
             else
@@ -366,7 +371,7 @@ local function CheckWantedStatus(player)
             end
           end
         else
-          if not timer then
+          if not playersWantedStatus[player] then
             print('Player is out of range, starting a new timer')
             playersWantedStatus[player] = GetGameTimer() -- Record the current time
           else
@@ -377,16 +382,17 @@ local function CheckWantedStatus(player)
     end
 
     -- Now check timer difference
-    if playersWantedStatus[player] ~= nil then
-      local timediff = GetGameTimer() - playersWantedStatus[player]
+    if timer then
+      local timediff = GetGameTimer() - timer
       print('timer running.. timediff ' .. timediff)
-      if timediff and timediff >= config.clearWantedTime then
+
+      if timediff >= config.clearWantedTime then
         ClearPlayerWantedLevel(player)
         playersWantedStatus[player] = nil -- Clear the time entry for the player
         print('Player wanted level cleared....')
       end
     else
-      print('player has no timer set')
+      print('Player has no timer set')
     end
   end
 end
