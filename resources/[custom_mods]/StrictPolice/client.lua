@@ -351,7 +351,7 @@ local function CheckWantedStatus(player)
       local pedType = GetPedType(entity)
       local distance = #(coords - GetEntityCoords(entity))
       if pedType == 6 or pedType == 27 or pedType == 29 then -- Cop, SWAT, Army
-        if distance <= 50.0 then
+        if distance <= 30.0 then
           local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, config.policePedFOV)
           local isDead = IsEntityDead(entity)
           if not isDead and isPlayerInFOV then
