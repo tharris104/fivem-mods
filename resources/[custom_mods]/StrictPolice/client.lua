@@ -17,6 +17,7 @@ local config = {
   headingThreshold = 90.0,   -- Heading comparison between AI and player vehicles for determining direction
   limitSearchVehicles = 30,  -- Only ever test a maximum of 30 vehicles nearby to player for checking red light status
   maxLosDist = 60,           -- Global maximum line of sight for Police PED's
+  clearWantedTime = 5000,    -- Time in milliseconds to clear wanted level if out of sight
 }
 
 -- Function for displaying notifications to player
@@ -340,17 +341,19 @@ local function CheckWantedStatus(playerId)
     return
   end
   local playerPed = GetPlayerPed(-1)
-  local ent, dist = GetClosestPolicePed()
-  if ent ~= -1 and dist ~= -1 then
-    playersWantedStatus[playerId] = GetGameTimer()
-  else
-    local timer = playersWantedStatus[playerId]
-    if timer and GetGameTimer() - timer >= 3000 then
-      if IsPlayerWantedLevelGreater(player, 0) then
-        print('cannot clear players wanted level')
-      else
-        print('clearing player wanted level')
+  if IsPlayerWantedLevelGreater(player, 0) then
+    local ent, dist = GetClosestPolicePed()
+    if ent ~= -1 and dist ~= -1 then
+      print('player is out of sight. timer started')
+      playersWantedStatus[playerId] = GetGameTimer() -- record the time
+    else
+      local timer = playersWantedStatus[playerId]
+      local timediff = GetGameTimer() - timer
+      print('checking timediff (' .. timediff .. ')')
+      if timer and timediff >= config.clearWantedTime then
         ClearPlayerWantedLevel(playerId)
+        playersWantedStatus[playerId] = nil -- Clear the time entry for the player
+        print('player wanted level cleared....')
       end
     end
   end
