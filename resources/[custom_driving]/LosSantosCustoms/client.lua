@@ -30,7 +30,7 @@ local garageOptions = {
 _menuPool = NativeUI.CreatePool()
 customMenu = NativeUI.CreateMenu("Los Santos Customs", "~g~What do you want to modify?", 1430, 0)
 _menuPool:Add(customMenu)
-mainMenu.SetMenuWidthOffset(50);
+customMenu.SetMenuWidthOffset(50);
 function initMenu(menu)
     table.sort(garageOptions)
     for Name, Options in pairs(garageOptions) do
