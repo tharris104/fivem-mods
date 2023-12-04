@@ -16,9 +16,12 @@ local garageLocations = {
 }
 local garageOptions = {
     ['Paint Job'] = {
+        { name = 'Randomize', value = 'random' },
+    },
+    ['Engine Modifications'] = {
         { name = 'test', value = 'test' },
     },
-    ['Vehicle Modifications'] = {
+    ['Body Modifications'] = {
         { name = 'test', value = 'test' },
     },
 }
@@ -28,7 +31,7 @@ local garageOptions = {
 
 -- Initilize NativeUI menu
 _menuPool = NativeUI.CreatePool()
-customMenu = NativeUI.CreateMenu("Los Santos Customs", "~g~What do you want to modify?", 1430, 0)
+customMenu = NativeUI.CreateMenu("Los Santos Customs", "~g~What would you like to modify?", 1430, 0)
 _menuPool:Add(customMenu)
 customMenu.SetMenuWidthOffset(50);
 function initMenu(menu)
@@ -53,7 +56,18 @@ _menuPool:ControlDisablingEnabled(false)
 
 -- Function for modifying the current vehicle player is in
 function modifyVehicle(mod_name, mod_value)
-    print("mod name: " .. mod_name .. " mod value: " .. mod_value )
+    local playerVehicle = GetVehiclePedIsIn(PlayerPedId(), true) -- return last vehicle even if they get out
+
+    if DoesEntityExist(playerVehicle) and GetPedInVehicleSeat(playerVehicle, -1) == PlayerPedId() then
+        if mod_value == 'random' then
+            local randomPrimaryColor = math.random(0, 255) -- Adjust the range as needed
+            local randomSecondaryColor = math.random(0, 255) -- Adjust the range as needed
+            SetVehicleColours(playerVehicle, randomPrimaryColor, randomSecondaryColor)
+            ShowNotification("~s~Vehicle colors randomized!")
+        end
+    else
+        ShowNotification("~r~You must be inside a vehicle to modify it.")
+    end
 end
 
 -- Function for displaying notifications to player
