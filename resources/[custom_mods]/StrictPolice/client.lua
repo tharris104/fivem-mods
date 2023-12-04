@@ -222,6 +222,7 @@ end
 -- Find the closest Police PED within line of sight of player, and report crimes on player
 -- Crime types reference: https://docs.fivem.net/natives/?_0xE9B09589827545E7
 Citizen.CreateThread(function()
+  local highestSpeed = 0
   while true do
     Wait(500) -- every half second
     local playerPed = PlayerPedId()
@@ -252,9 +253,10 @@ Citizen.CreateThread(function()
             end
 
             -- cop sees you speeding in car
-            if speedmph > config.globalSpeedLimit then
+            if speedmph > highestSpeed then
+              highestSpeed = speedmph  -- Update the highest speed
               local rounded_speedmph = Round(speedmph, 2)
-              ShowNotification(playerName .. " recieved a speeding Violation! (~r~" .. rounded_speedmph .. " mph~s~)")
+              ShowNotification(playerName .. " received a speeding Violation! (~r~" .. rounded_speedmph .. " mph~s~)")
               print(playerName .. " got a speeding violation! (" .. rounded_speedmph .. ") cop (" .. ent .. ") dist (" .. dist .. ")")
               ReportCrime(PlayerId(), 4, GetWantedLevelThreshold(1)) -- 4: Speeding vehicle (a "5-10")
             end
