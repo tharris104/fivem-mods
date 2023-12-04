@@ -4,7 +4,7 @@
 -- Global configurations
 local config = {
     debug_enabled             = true,   -- Debug logging to local console
-    openMenuKey               = 29,     -- default key bind (E), only works inside the marker
+    openMenuKey               = 86,     -- default key bind (E), only works inside the marker
     markerDisplayDistance     = 25.0,   -- distance in which to draw markers
 }
 -------------------------------------------------------------------------------------
