@@ -422,6 +422,7 @@ local function CheckWantedStatus(player)
             local police_vehicle = GetVehiclePedIsIn(entity, true)
             if police_vehicle then
               TaskEnterVehicle(entity, police_vehicle, -1, -1, 2.0, 1, 0)
+              TaskVehicleDriveWander(entity, police_vehicle, 30.0, 786603)
             else
               TaskWanderStandard(entity, 10.0, 10)
             end
