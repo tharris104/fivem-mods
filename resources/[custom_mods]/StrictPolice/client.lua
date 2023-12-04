@@ -224,7 +224,7 @@ end
 Citizen.CreateThread(function()
   local highestSpeed = 0
   while true do
-    Wait(500) -- every half second
+    Wait(1000) -- every second
     local playerPed = PlayerPedId()
     local playerName = GetPlayerName(PlayerId())
     local ent, dist = GetClosestPolicePed() -- return single closted Police PED.. or not
@@ -253,7 +253,7 @@ Citizen.CreateThread(function()
             end
 
             -- cop sees you speeding in car
-            if speedmph > highestSpeed then
+            if speedmph > config.globalSpeedLimit and speedmph > highestSpeed then
               highestSpeed = speedmph  -- Update the highest speed
               local rounded_speedmph = Round(speedmph, 2)
               ShowNotification(playerName .. " received a speeding Violation! (~r~" .. rounded_speedmph .. " mph~s~)")
