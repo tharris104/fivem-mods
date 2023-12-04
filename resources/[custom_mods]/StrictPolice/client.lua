@@ -418,6 +418,12 @@ local function CheckWantedStatus(player)
           local pedType = GetPedType(entity)
           if pedType == 6 or pedType == 27 or pedType == 29 then
             ClearPoliceTasks(entity)
+            local police_vehicle = GetVehiclePedIsIn(entity, true)
+            if police_vehicle then
+              TaskEnterVehicle(entity, police_vehicle, -1, -1, 2.0, 1, 0)
+            else
+              TaskWanderStandard(entity, 10.0, 10)
+            end
           end
         end
 

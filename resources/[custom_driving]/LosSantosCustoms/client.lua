@@ -86,7 +86,7 @@ function modifyVehicle(mod_name, mod_value)
             local randomPrimaryColor = math.random(0, 255) -- Adjust the range as needed
             local randomSecondaryColor = math.random(0, 255) -- Adjust the range as needed
             SetVehicleIsStolen(playerVehicle, false) -- remove isStolen flag if set
-            ClearPlayerWantedLevel(PlayerId())
+            SetVehicleIsWanted(playerVehicle, false) -- remove isWanted flag if set
             SetVehicleColours(playerVehicle, randomPrimaryColor, randomSecondaryColor)
             ShowNotification("~s~Vehicle colors randomized!")
         end
