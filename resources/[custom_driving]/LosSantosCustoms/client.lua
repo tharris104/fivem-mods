@@ -24,6 +24,10 @@ local garageOptions = {
     ['Body Modifications'] = {
         { name = 'test', value = 'test' },
     },
+    ['Repair Vechicle'] = {
+        { name = 'Repair entire vehicle', value = 'repair' },
+        { name = 'Clean vehicle', value = 'clean' },
+    },
 }
 -------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------
