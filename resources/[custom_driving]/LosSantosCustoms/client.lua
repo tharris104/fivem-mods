@@ -34,7 +34,6 @@ customMenu.SetMenuWidthOffset(50);
 function initMenu(menu)
     table.sort(garageOptions)
     for Name, Options in pairs(garageOptions) do
-        print('Name: ' .. Name)
         local garage_category = _menuPool:AddSubMenu(menu, Name, '', true)
         for _, Option in pairs(Options) do
             local option_name = NativeUI.CreateItem(Option.name, '')
