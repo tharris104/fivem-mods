@@ -5,7 +5,7 @@
 local config = {
     debug_enabled             = true,   -- Debug logging to local console
     openMenuKey               = 29,     -- default key bind (E), only works inside the marker
-    markerDisplayDistance     = 16.0,   -- distance in which to draw markers
+    markerDisplayDistance     = 25.0,   -- distance in which to draw markers
 }
 -------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ Citizen.CreateThread(function()
         local isPlayerNearMarkerArea, location = IsPlayerNearMarkerArea(playerCoords)
 
         if isPlayerNearMarkerArea then
-            DrawMarker(1, location.x, location.y, location.z - 1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, 255, 255, 0, 200, false, false, 2, nil, nil, false)
+            DrawMarker(1, location.x, location.y, location.z - 1.0, 0, 0, 0, 0, 0, 0, 3.0, 3.0, 3.0, 255, 255, 0, 200, false, false, 2, nil, nil, false)
 
             if IsControlJustPressed(0, config.openMenuKey) then -- Replace with the desired control key
                 customMenu:Visible(not customMenu:Visible())
