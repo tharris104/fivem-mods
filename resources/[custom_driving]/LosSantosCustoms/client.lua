@@ -120,6 +120,8 @@ Citizen.CreateThread(function()
             if IsPlayerInMarkerArea(playerCoords) and isInsideMarker == false then
                 isInsideMarker = true
                 ShowNotification("~s~Press ~r~E ~s~to modify vehicle")
+            elseif IsPlayerInMarkerArea(playerCoords) == false then
+                isInsideMarker = false
             end
         else
             isInsideMarker = false
