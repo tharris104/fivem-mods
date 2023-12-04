@@ -37,7 +37,6 @@ function initMenu(menu)
         print('Name: ' .. Name)
         local garage_category = _menuPool:AddSubMenu(menu, Name, '', true)
         for _, Option in pairs(Options) do
-            print('Option: ' .. Option)
             local option_name = NativeUI.CreateItem(Option.name, '')
             garage_category:AddItem(option_name)
             option_name.Activated = function(ParentMenu, SelectedItem)
