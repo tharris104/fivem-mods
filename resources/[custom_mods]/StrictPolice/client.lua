@@ -19,7 +19,7 @@ local config = {
   headingThreshold = 90.0,   -- Heading comparison between AI and player vehicles for determining direction
   limitSearchVehicles = 30,  -- Only ever test a maximum of 30 vehicles nearby to player for checking red light status
   maxLosDist = 60,           -- Global maximum line of sight for Police PED's
-  clearWantedTime = 10000,   -- Time in milliseconds to clear wanted level once out of sight
+  clearWantedTime = 16000,   -- Time in milliseconds to clear wanted level once out of sight
 }
 
 -- Function for displaying notifications to player
