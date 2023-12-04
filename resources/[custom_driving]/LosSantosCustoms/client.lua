@@ -31,7 +31,7 @@ local garageOptions = {
 
 -- Initilize NativeUI menu
 _menuPool = NativeUI.CreatePool()
-customMenu = NativeUI.CreateMenu("Los Santos Customs", "~g~What would you like to modify?", 1430, 0)
+customMenu = NativeUI.CreateMenu("Los Santos Customs", "~g~What would you like to modify?", 0, 0)
 _menuPool:Add(customMenu)
 customMenu.SetMenuWidthOffset(50);
 function initMenu(menu)
