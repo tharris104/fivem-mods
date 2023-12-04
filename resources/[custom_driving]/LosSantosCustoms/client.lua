@@ -12,7 +12,10 @@ local config = {
 -------------------------------------------------------------------------------------
 -- Define where Los Santos Garages are located (coordinates)
 local garageLocations = {
-    { x = -339.7, y = -136.6, z = 38.57 },
+    { x = -339.7,   y = -136.6,   z = 38.57 }, -- Carcer Way, Burton, Los Santos
+    { x = -1154.74, y = -2004.66, z = 12.71 }, -- Greenwich Parkway, Los Santos International Airport, Los Santos
+    { x = 731.51,   y = -1088.71, z = 21.69 }, -- Popular Street, La Mesa, Los Santos
+    { x = 1175.37,  y = 2640.54,  z = 37.49 }, -- Route 68, Harmony, Blaine County
 }
 local garageOptions = {
     ['Paint Job'] = {
@@ -57,6 +60,22 @@ _menuPool:RefreshIndex()
 _menuPool:MouseControlsEnabled (false)
 _menuPool:MouseEdgeEnabled (false)
 _menuPool:ControlDisablingEnabled(false)
+
+-- Function to add a blip for a specific location
+function AddBlipForLocation(location)
+    local blip = AddBlipForCoord(location.x, location.y, location.z)
+    SetBlipSprite(blip, 72)  -- Set the blip sprite to 72
+    SetBlipColour(blip, 0)  -- Set the blip color to white
+    SetBlipAsShortRange(blip, false)
+    BeginTextCommandSetBlipName("STRING")
+    AddTextComponentString("Los Santos Customs")  -- Set the blip name
+    EndTextCommandSetBlipName(blip)
+end
+
+-- Create blips for all garage locations
+for _, location in ipairs(garageLocations) do
+    AddBlipForLocation(location)
+end
 
 -- Function for modifying the current vehicle player is in
 function modifyVehicle(mod_name, mod_value)
