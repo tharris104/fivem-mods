@@ -411,6 +411,7 @@ local function CheckWantedStatus(player)
       local timediff = GetGameTimer() - timer
 
       if timediff >= config.clearWantedTime then
+        print('Player wanted level cleared in ' .. timediff .. ' seconds!')
         ClearPlayerWantedLevel(player)
 
         -- Clear tasks for police NPCs
@@ -426,9 +427,7 @@ local function CheckWantedStatus(player)
             end
           end
         end
-
         playersWantedStatus[player] = nil -- Clear the time entry for the player
-        print('Player wanted level cleared!')
       end
     end
   end
