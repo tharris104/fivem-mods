@@ -65,8 +65,8 @@ _menuPool:ControlDisablingEnabled(false)
 function AddBlipForLocation(location)
     local blip = AddBlipForCoord(location.x, location.y, location.z)
     SetBlipSprite(blip, 72)  -- Set the blip sprite to 72
-    SetBlipColour(blip, 0)  -- Set the blip color to white
-    SetBlipAsShortRange(blip, false)
+    SetBlipColour(blip, 4)  -- Set the blip color to white
+    SetBlipAsShortRange(blip, true)
     BeginTextCommandSetBlipName("STRING")
     AddTextComponentString("Los Santos Customs")  -- Set the blip name
     EndTextCommandSetBlipName(blip)
