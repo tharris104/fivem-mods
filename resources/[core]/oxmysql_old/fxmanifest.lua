@@ -2,8 +2,8 @@ fx_version 'cerulean'
 game 'common'
 
 name 'oxmysql'
-description 'Database wrapper for FXServer utilising node-mysql2 offering improved performance and security.'
-version '2.7.7'
+description 'Database wrapper for FiveM utilising node-mysql2 offering improved performance and security.'
+version '2.4.0'
 url 'https://github.com/overextended/oxmysql'
 author 'overextended'
 
@@ -15,11 +15,11 @@ client_script 'ui.lua'
 server_script 'dist/build.js'
 
 files {
-	'web/build/index.html',
-	'web/build/**/*'
+	'ui/build/index.html',
+	'ui/build/**/*'
 }
 
-ui_page 'web/build/index.html'
+ui_page 'ui/build/index.html'
 
 provide 'mysql-async'
 provide 'ghmattimysql'
