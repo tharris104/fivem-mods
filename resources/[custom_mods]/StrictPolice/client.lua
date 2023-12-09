@@ -392,7 +392,7 @@ local function CheckWantedStatus(player)
             playersWantedStatus[player] = nil -- Clear the time entry for the player
           else
             if not timer then
-              print('Player is now out of sight, starting a new timer')
+              -- Player is now out of sight, starting a new timer
               playersWantedStatus[player] = GetGameTimer() -- Record the current time
             end
           end
@@ -409,8 +409,8 @@ local function CheckWantedStatus(player)
       local timediff = GetGameTimer() - timer
 
       if timediff >= config.clearWantedTime then
-        print('Player wanted level cleared in ' .. timediff .. ' seconds!')
         ClearPlayerWantedLevel(player)
+        print('Player was out of sight for ' .. timediff .. ' seconds! Wanted status has been cleared')
 
         -- Clear tasks for police NPCs
         for _, entity in pairs(GetGamePool("CPed")) do
@@ -420,7 +420,7 @@ local function CheckWantedStatus(player)
             local police_vehicle = GetVehiclePedIsIn(entity, true)
             if police_vehicle then
               TaskEnterVehicle(entity, police_vehicle, -1, -1, 2.0, 1, 0)
-              TaskVehicleDriveWander(entity, police_vehicle, 20.0, 1074528677)
+              TaskVehicleDriveWander(entity, police_vehicle, 20.0, 524723)
             else
               TaskWanderStandard(entity, 10.0, 10)
             end
