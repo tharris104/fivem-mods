@@ -18,7 +18,7 @@ local config = {
   angleThreshold = 90.0,     -- If player passes this vehicle within set angle based on heading, report traffic violation
   headingThreshold = 90.0,   -- Heading comparison between AI and player vehicles for determining direction
   limitSearchVehicles = 30,  -- Only ever test a maximum of 30 vehicles nearby to player for checking red light status
-  maxLosDist = 60,           -- Global maximum line of sight for Police PED's
+  maxLosDist = 100,          -- Global maximum line of sight for Police PED's
   clearWantedTime = 20000,   -- Time in milliseconds to clear wanted level once out of sight
 }
 
@@ -384,7 +384,7 @@ local function CheckWantedStatus(player)
       local distance = #(coords - GetEntityCoords(entity))
 
       if pedType == 6 or pedType == 27 or pedType == 29 then -- Cop, SWAT, Army
-        if distance <= 30.0 then
+        if distance <= config.maxLosDist then
           local isPlayerInFOV = IsPlayerInPedFOV(entity, playerPed, config.policePedFOV)
           local isDead = IsEntityDead(entity)
 
